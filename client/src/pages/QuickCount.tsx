@@ -29,32 +29,18 @@ const PRESET_LABELS: PresetLabel[] = [
   { id: 'brother', name: '형', emoji: '👦', color: '#A7FFEB' },
   { id: 'younger-sister', name: '여동생', emoji: '👧', color: '#FFB3E6' },
   { id: 'younger-brother', name: '남동생', emoji: '👦', color: '#B3E0FF' },
-  { id: 'grandma', name: '할머니', emoji: '👵', color: '#FFD4B3' },
-  { id: 'grandpa', name: '할아버지', emoji: '👴', color: '#C5E1A5' },
   
-  // 친구
-  { id: 'friend1', name: '친구1', emoji: '😊', color: '#FFCC80' },
-  { id: 'friend2', name: '친구2', emoji: '😄', color: '#B39DDB' },
-  { id: 'friend3', name: '친구3', emoji: '🙂', color: '#90CAF9' },
-  { id: 'friend4', name: '친구4', emoji: '😃', color: '#A5D6A7' },
-  
-  // 회사
-  { id: 'team-lead', name: '팀장', emoji: '👔', color: '#81C784' },
-  { id: 'manager', name: '대리', emoji: '💼', color: '#64B5F6' },
-  { id: 'colleague1', name: '동료1', emoji: '👥', color: '#FFB74D' },
-  { id: 'colleague2', name: '동료2', emoji: '🤝', color: '#F06292' },
-  
-  // 학교
-  { id: 'teacher', name: '선생님', emoji: '👨‍🏫', color: '#4DB6AC' },
+  // 재미있는 이모지
   { id: 'student1', name: '1번', emoji: '1️⃣', color: '#FFE082' },
   { id: 'student2', name: '2번', emoji: '2️⃣', color: '#BCAAA4' },
   { id: 'student3', name: '3번', emoji: '3️⃣', color: '#CE93D8' },
-  
-  // 동물/재미
+  { id: 'student4', name: '4번', emoji: '4️⃣', color: '#A5D6A7' },
   { id: 'cat', name: '고양이', emoji: '🐱', color: '#FFAB91' },
   { id: 'dog', name: '강아지', emoji: '🐶', color: '#80DEEA' },
   { id: 'rabbit', name: '토끼', emoji: '🐰', color: '#F48FB1' },
   { id: 'bear', name: '곰', emoji: '🐻', color: '#FFCC80' },
+  { id: 'fox', name: '여우', emoji: '🦊', color: '#FFD54F' },
+  { id: 'panda', name: '판다', emoji: '🐼', color: '#C5E1A5' },
 ];
 
 export default function QuickCount() {
