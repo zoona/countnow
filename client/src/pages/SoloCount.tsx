@@ -13,6 +13,9 @@ export default function SoloCount() {
   const decrement = () => setCount(prev => Math.max(0, prev - 1));
   const reset = () => setCount(0);
 
+  const mainColor = '#80D8FF';
+  const darkerColor = `color-mix(in srgb, ${mainColor} 70%, black)`;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
@@ -42,7 +45,7 @@ export default function SoloCount() {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8">
+        <div className="w-full max-w-md space-y-4">
           <div className="text-center">
             <div className="text-9xl font-extrabold mb-4" data-testid="text-solo-count">
               {count}
@@ -50,27 +53,30 @@ export default function SoloCount() {
             <p className="text-muted-foreground">탭해서 카운트 증가</p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             <button
               onClick={increment}
-              className="w-full min-h-28 rounded-3xl bg-primary text-primary-foreground p-8 
+              className="w-full min-h-32 rounded-3xl p-6 flex items-center justify-center
                        transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2"
+              style={{ backgroundColor: mainColor }}
               data-testid="button-solo-increment"
             >
-              <span className="text-3xl font-bold">+</span>
+              <span className="text-6xl font-extrabold text-white drop-shadow-lg">+</span>
             </button>
 
-            <Button
+            <button
               onClick={decrement}
-              variant="outline"
-              className="w-full"
-              size="lg"
               disabled={count === 0}
+              className="w-full min-h-12 rounded-2xl shadow-md hover-elevate active-elevate-2 
+                       flex items-center justify-center transition-transform active:scale-95
+                       disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{
+                backgroundColor: count === 0 ? '#999' : darkerColor,
+              }}
               data-testid="button-solo-decrement"
             >
-              <Minus className="h-5 w-5 mr-2" />
-              -1
-            </Button>
+              <Minus className="h-6 w-6 text-white drop-shadow-md" />
+            </button>
           </div>
         </div>
       </div>
