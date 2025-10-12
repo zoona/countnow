@@ -53,6 +53,8 @@ const LABEL_GROUPS: LabelGroup[] = [
       { id: 'student2', name: '2번', emoji: '2️⃣', color: '#BCAAA4' },
       { id: 'student3', name: '3번', emoji: '3️⃣', color: '#CE93D8' },
       { id: 'student4', name: '4번', emoji: '4️⃣', color: '#A5D6A7' },
+      { id: 'student5', name: '5번', emoji: '5️⃣', color: '#90CAF9' },
+      { id: 'student6', name: '6번', emoji: '6️⃣', color: '#FFAB91' },
     ]
   },
   {
@@ -176,16 +178,29 @@ export default function QuickCount() {
 
   if (setupMode) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-chart-1/20 via-background to-chart-2/20 p-6">
-        <div className="max-w-4xl mx-auto space-y-6 py-8">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold">참가자 선택</h1>
-            <p className="text-muted-foreground">함께 카운팅할 사람들을 선택하세요</p>
+      <div className="min-h-screen bg-gradient-to-br from-chart-1/20 via-background to-chart-2/20 flex flex-col">
+        <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
+          <div className="max-w-4xl mx-auto space-y-3">
+            <div className="text-center space-y-1">
+              <h1 className="text-2xl font-bold">참가자 선택</h1>
+              <p className="text-sm text-muted-foreground">함께 카운팅할 사람들을 선택하세요</p>
+            </div>
+            <Button
+              onClick={startCounting}
+              disabled={selectedLabels.size === 0}
+              className="w-full"
+              size="lg"
+              data-testid="button-start-counting"
+            >
+              카운팅 시작 ({selectedLabels.size}명)
+            </Button>
           </div>
+        </div>
 
-          <div className="space-y-6">
+        <div className="flex-1 overflow-auto p-4">
+          <div className="max-w-4xl mx-auto space-y-4">
             {LABEL_GROUPS.map((group) => (
-              <div key={group.title} className="space-y-3">
+              <div key={group.title} className="space-y-2">
                 <h3 className="text-sm font-semibold text-muted-foreground px-1">{group.title}</h3>
                 <div className="grid grid-cols-3 gap-2">
                   {group.labels.map((label) => {
@@ -194,7 +209,7 @@ export default function QuickCount() {
                       <Card
                         key={label.id}
                         onClick={() => toggleLabel(label.id)}
-                        className={`p-3 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
+                        className={`p-2.5 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
                           isSelected ? 'ring-2 ring-primary' : ''
                         }`}
                         style={{ borderColor: isSelected ? label.color : undefined }}
@@ -219,16 +234,6 @@ export default function QuickCount() {
               </div>
             ))}
           </div>
-
-          <Button
-            onClick={startCounting}
-            disabled={selectedLabels.size === 0}
-            className="w-full"
-            size="lg"
-            data-testid="button-start-counting"
-          >
-            카운팅 시작 ({selectedLabels.size}명)
-          </Button>
         </div>
       </div>
     );
