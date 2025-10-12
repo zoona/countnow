@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2 } from 'lucide-react';
+import { Check, Share2, Edit2, Plus, X } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
@@ -27,6 +27,12 @@ interface LabelGroup {
   title: string;
   labels: PresetLabel[];
 }
+
+const COLOR_POOL = [
+  '#81C784', '#FF8A80', '#80D8FF', '#CE93D8', '#A7FFEB', '#FFB3E6',
+  '#B3E0FF', '#FFE082', '#BCAAA4', '#A5D6A7', '#90CAF9', '#FFAB91',
+  '#80DEEA', '#F48FB1', '#FFCC80', '#FFD54F', '#C5E1A5'
+];
 
 const LABEL_GROUPS: LabelGroup[] = [
   {
@@ -100,6 +106,9 @@ export default function QuickCount() {
   });
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
+  const [customName, setCustomName] = useState('');
+  const [customEmoji, setCustomEmoji] = useState('');
 
   const toggleLabel = (labelId: string) => {
     setSelectedLabels(prev => {
@@ -113,8 +122,39 @@ export default function QuickCount() {
     });
   };
 
+  const addCustomParticipant = () => {
+    const name = customName.trim();
+    const emoji = customEmoji.trim();
+    
+    if (!name || !emoji) return;
+    
+    const id = `custom-${Date.now()}`;
+    const color = COLOR_POOL[customParticipants.length % COLOR_POOL.length];
+    
+    const newParticipant: PresetLabel = {
+      id,
+      name,
+      emoji,
+      color,
+    };
+    
+    setCustomParticipants(prev => [...prev, newParticipant]);
+    setSelectedLabels(prev => new Set([...Array.from(prev), id]));
+    setCustomName('');
+    setCustomEmoji('');
+  };
+
+  const removeCustomParticipant = (id: string) => {
+    setCustomParticipants(prev => prev.filter(p => p.id !== id));
+    setSelectedLabels(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(id);
+      return newSet;
+    });
+  };
+
   const startCounting = () => {
-    const allLabels = LABEL_GROUPS.flatMap(group => group.labels);
+    const allLabels = [...customParticipants, ...LABEL_GROUPS.flatMap(group => group.labels)];
     const selected = allLabels.filter(label => selectedLabels.has(label.id));
     const newPlayers: Player[] = selected.map(label => ({
       id: label.id,
@@ -185,6 +225,38 @@ export default function QuickCount() {
               <h1 className="text-2xl font-bold">참가자 선택</h1>
               <p className="text-sm text-muted-foreground">함께 카운팅할 사람들을 선택하세요</p>
             </div>
+            
+            <div className="flex gap-2">
+              <Input
+                value={customEmoji}
+                onChange={(e) => setCustomEmoji(e.target.value)}
+                placeholder="🙂"
+                className="w-16 text-center text-xl"
+                maxLength={2}
+                data-testid="input-custom-emoji"
+              />
+              <Input
+                value={customName}
+                onChange={(e) => setCustomName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    addCustomParticipant();
+                  }
+                }}
+                placeholder="이름 입력"
+                className="flex-1"
+                data-testid="input-custom-name"
+              />
+              <Button
+                onClick={addCustomParticipant}
+                disabled={!customName.trim() || !customEmoji.trim()}
+                size="icon"
+                data-testid="button-add-custom"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
             <Button
               onClick={startCounting}
               disabled={selectedLabels.size === 0}
@@ -199,6 +271,52 @@ export default function QuickCount() {
 
         <div className="flex-1 overflow-auto p-4">
           <div className="max-w-4xl mx-auto space-y-4">
+            {customParticipants.length > 0 && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground px-1">추가한 사람</h3>
+                <div className="grid grid-cols-3 gap-2">
+                  {customParticipants.map((label) => {
+                    const isSelected = selectedLabels.has(label.id);
+                    return (
+                      <Card
+                        key={label.id}
+                        onClick={() => toggleLabel(label.id)}
+                        className={`p-2.5 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
+                          isSelected ? 'ring-2 ring-primary' : ''
+                        }`}
+                        style={{ borderColor: isSelected ? label.color : undefined }}
+                        data-testid={`label-${label.id}`}
+                      >
+                        <Button
+                          variant="destructive"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeCustomParticipant(label.id);
+                          }}
+                          className="absolute -top-3 -left-3 h-14 w-14 rounded-full p-0 z-10"
+                          data-testid={`button-remove-${label.id}`}
+                        >
+                          <X className="h-5 w-5" />
+                        </Button>
+                        {isSelected && (
+                          <div 
+                            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white"
+                            style={{ backgroundColor: label.color }}
+                          >
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="text-2xl">{label.emoji}</div>
+                          <div className="text-xs font-medium text-center">{label.name}</div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {LABEL_GROUPS.map((group) => (
               <div key={group.title} className="space-y-2">
                 <h3 className="text-sm font-semibold text-muted-foreground px-1">{group.title}</h3>
