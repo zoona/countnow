@@ -78,12 +78,12 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
   return (
     <div 
       className={`
-        relative min-h-36 rounded-3xl shadow-lg overflow-hidden
+        relative min-h-40 rounded-3xl shadow-lg overflow-hidden
         ${isLongPressing ? 'ring-4 ring-offset-2 ring-white animate-pulse' : ''}
       `}
       style={{ backgroundColor: color }}
     >
-      {/* 상단 80% - 증가 영역 */}
+      {/* 상단 70% - 증가 영역 */}
       <button
         onClick={handleIncrementClick}
         onMouseDown={handleMouseDown}
@@ -91,7 +91,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="w-full h-[80%] flex flex-col items-center justify-center gap-2 
+        className="w-full h-[70%] flex flex-col items-center justify-center gap-2 
                    transition-transform active:scale-95"
         data-testid={`button-player-${id}`}
       >
@@ -103,12 +103,12 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         </span>
       </button>
       
-      {/* 하단 20% - 감소 영역 */}
+      {/* 하단 30% - 감소 영역 */}
       <button
         onClick={handleDecrementClick}
         onTouchEnd={handleDecrementClick}
         disabled={count === 0}
-        className="w-full h-[20%] border-t border-white/20 flex items-center justify-center
+        className="w-full h-[30%] border-t border-white/20 flex items-center justify-center
                    transition-all hover:bg-black/10 active:bg-black/20
                    disabled:opacity-30 disabled:cursor-not-allowed"
         data-testid={`button-player-decrement-${id}`}
