@@ -91,8 +91,8 @@ export default function Home() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
-                      <h3 className="font-bold">
-                        {session.type === 'solo' ? '혼자 카운팅' : '여럿이 카운팅'}
+                      <h3 className="font-bold" data-testid={`text-session-title-${session.code}`}>
+                        {session.title || (session.type === 'solo' ? '혼자 카운팅' : '여럿이 카운팅')}
                       </h3>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                         {session.type === 'solo' ? (

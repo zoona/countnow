@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Share2, Minus } from 'lucide-react';
+import { RotateCcw, Share2, Minus, Edit2, Check } from 'lucide-react';
 import { useParams } from 'wouter';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession } from '@/lib/storage';
+import { Input } from '@/components/ui/input';
 
 export default function SoloCount() {
   const { code } = useParams();
@@ -16,6 +17,16 @@ export default function SoloCount() {
     }
     return 0;
   });
+  const [title, setTitle] = useState(() => {
+    if (code) {
+      const saved = getSession(code);
+      if (saved && saved.type === 'solo') {
+        return saved.title || '';
+      }
+    }
+    return '';
+  });
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
 
   const increment = () => setCount(prev => prev + 1);
@@ -24,6 +35,22 @@ export default function SoloCount() {
 
   const mainColor = '#80D8FF';
   const darkerColor = `color-mix(in srgb, ${mainColor} 70%, black)`;
+
+  const handleTitleSave = () => {
+    const trimmedTitle = title.trim();
+    setTitle(trimmedTitle);
+    setIsEditingTitle(false);
+    
+    if (code) {
+      saveSession({
+        code,
+        type: 'solo',
+        count,
+        timestamp: Date.now(),
+        title: trimmedTitle || undefined,
+      });
+    }
+  };
 
   useEffect(() => {
     if (!code) return;
@@ -34,6 +61,7 @@ export default function SoloCount() {
         type: 'solo',
         count,
         timestamp: Date.now(),
+        title: title || undefined,
       });
     };
 
@@ -43,15 +71,59 @@ export default function SoloCount() {
       clearInterval(interval);
       save();
     };
-  }, [code, count]);
+  }, [code, count, title]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <h1 className="text-xl font-bold">카운팅</h1>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-2xl">🎯</span>
+            {isEditingTitle ? (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={handleTitleSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleTitleSave();
+                    }
+                  }}
+                  placeholder="제목 입력"
+                  className="h-8"
+                  autoFocus
+                  data-testid="input-title"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleTitleSave}
+                  className="h-8 w-8"
+                  data-testid="button-save-title"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <h1 className="text-xl font-bold truncate" data-testid="text-session-title">
+                  {title || '혼자 카운팅'}
+                </h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditingTitle(true)}
+                  className="h-8 w-8 flex-shrink-0"
+                  data-testid="button-edit-title"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
           
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-shrink-0">
             <Button
               variant="outline"
               size="icon"

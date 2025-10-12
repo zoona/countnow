@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2 } from 'lucide-react';
+import { Check, Share2, Edit2 } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession } from '@/lib/storage';
+import { Input } from '@/components/ui/input';
 
 interface Player {
   id: string;
@@ -63,6 +64,16 @@ export default function QuickCount() {
     }
     return [];
   });
+  const [title, setTitle] = useState(() => {
+    if (code) {
+      const saved = getSession(code);
+      if (saved && saved.type === 'multi') {
+        return saved.title || '';
+      }
+    }
+    return '';
+  });
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
 
   const toggleLabel = (labelId: string) => {
@@ -102,6 +113,22 @@ export default function QuickCount() {
     ));
   };
 
+  const handleTitleSave = () => {
+    const trimmedTitle = title.trim();
+    setTitle(trimmedTitle);
+    setIsEditingTitle(false);
+    
+    if (code) {
+      saveSession({
+        code,
+        type: 'multi',
+        players,
+        timestamp: Date.now(),
+        title: trimmedTitle || undefined,
+      });
+    }
+  };
+
   useEffect(() => {
     if (!code || setupMode || players.length === 0) return;
 
@@ -111,6 +138,7 @@ export default function QuickCount() {
         type: 'multi',
         players,
         timestamp: Date.now(),
+        title: title || undefined,
       });
     };
 
@@ -120,7 +148,7 @@ export default function QuickCount() {
       clearInterval(interval);
       save();
     };
-  }, [code, players, setupMode]);
+  }, [code, players, setupMode, title]);
 
   if (setupMode) {
     return (
@@ -182,13 +210,58 @@ export default function QuickCount() {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <h1 className="text-xl font-bold">카운팅</h1>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className="text-2xl">👥</span>
+            {isEditingTitle ? (
+              <div className="flex items-center gap-2 flex-1">
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={handleTitleSave}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleTitleSave();
+                    }
+                  }}
+                  placeholder="제목 입력"
+                  className="h-8"
+                  autoFocus
+                  data-testid="input-title"
+                />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleTitleSave}
+                  className="h-8 w-8"
+                  data-testid="button-save-title"
+                >
+                  <Check className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-1 min-w-0">
+                <h1 className="text-xl font-bold truncate" data-testid="text-session-title">
+                  {title || '여럿이 카운팅'}
+                </h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditingTitle(true)}
+                  className="h-8 w-8 flex-shrink-0"
+                  data-testid="button-edit-title"
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
           
           <Button
             variant="outline"
             size="icon"
             onClick={() => setShowShare(true)}
             data-testid="button-quick-share"
+            className="flex-shrink-0"
           >
             <Share2 className="h-5 w-5" />
           </Button>

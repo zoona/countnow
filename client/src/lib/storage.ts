@@ -3,6 +3,7 @@ interface SoloSession {
   type: 'solo';
   count: number;
   timestamp: number;
+  title?: string;
 }
 
 interface MultiSession {
@@ -16,6 +17,7 @@ interface MultiSession {
     count: number;
   }[];
   timestamp: number;
+  title?: string;
 }
 
 export type CountSession = SoloSession | MultiSession;
