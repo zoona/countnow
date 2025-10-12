@@ -126,7 +126,12 @@ export default function QuickCount() {
     const name = customName.trim();
     const emoji = customEmoji.trim();
     
-    if (!name || !emoji) return;
+    console.log('addCustomParticipant called', { name, emoji, customName, customEmoji });
+    
+    if (!name || !emoji) {
+      console.log('Early return: missing name or emoji');
+      return;
+    }
     
     const id = `custom-${Date.now()}`;
     const color = COLOR_POOL[customParticipants.length % COLOR_POOL.length];
@@ -137,6 +142,8 @@ export default function QuickCount() {
       emoji,
       color,
     };
+    
+    console.log('Adding participant:', newParticipant);
     
     setCustomParticipants(prev => [...prev, newParticipant]);
     setSelectedLabels(prev => new Set([...Array.from(prev), id]));
