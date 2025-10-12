@@ -110,7 +110,7 @@ export default function QuickCount() {
   const [showShare, setShowShare] = useState(false);
   const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
   const [customName, setCustomName] = useState('');
-  const [customEmoji, setCustomEmoji] = useState('');
+  const [customEmoji, setCustomEmoji] = useState('😊');
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const toggleLabel = (labelId: string) => {
@@ -149,7 +149,7 @@ export default function QuickCount() {
     setCustomParticipants(prev => [...prev, newParticipant]);
     setSelectedLabels(prev => new Set([...Array.from(prev), id]));
     setCustomName('');
-    setCustomEmoji('');
+    setCustomEmoji('😊');
   };
 
   const removeCustomParticipant = (id: string) => {
