@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Play, Users, Clock, Share2 } from 'lucide-react';
+import { Zap, Settings, Users, Clock, Share2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 export default function Home() {
   const [, setLocation] = useLocation();
-  const [roomName, setRoomName] = useState('');
 
-  const createRoom = () => {
+  const quickStart = () => {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    setLocation(`/room/${code}/count`);
+  };
+
+  const advancedSetup = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
     setLocation(`/room/${code}/setup`);
   };
@@ -28,31 +31,44 @@ export default function Home() {
             CountNow
           </h1>
           <p className="text-xl text-muted-foreground">
-            즉흥 카운팅 게임 - 10초만에 시작하기
+            즉흥 카운팅 - 지금 바로 시작하세요
           </p>
         </div>
 
-        <Card className="p-8 space-y-6">
-          <div className="space-y-3">
-            <label className="text-sm font-medium">방 이름 (선택)</label>
-            <Input
-              placeholder="예: 주말가족게임"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              data-testid="input-room-name"
-            />
-          </div>
+        <div className="grid gap-4">
+          <Card className="p-6">
+            <h3 className="text-lg font-bold mb-2">⚡ 빠른 시작</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              바로 카운팅 시작 (참가자는 나중에 추가)
+            </p>
+            <Button
+              onClick={quickStart}
+              className="w-full"
+              size="lg"
+              data-testid="button-quick-start"
+            >
+              <Zap className="h-5 w-5 mr-2" />
+              즉시 시작
+            </Button>
+          </Card>
 
-          <Button
-            onClick={createRoom}
-            className="w-full"
-            size="lg"
-            data-testid="button-create-room"
-          >
-            <Play className="h-5 w-5 mr-2" />
-            바로 시작하기
-          </Button>
-        </Card>
+          <Card className="p-6">
+            <h3 className="text-lg font-bold mb-2">⚙️ 게임 모드</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              참가자, 모드, 타이머 설정하기
+            </p>
+            <Button
+              onClick={advancedSetup}
+              variant="outline"
+              className="w-full"
+              size="lg"
+              data-testid="button-advanced-setup"
+            >
+              <Settings className="h-5 w-5 mr-2" />
+              설정하고 시작
+            </Button>
+          </Card>
+        </div>
 
         {recentRooms.length > 0 && (
           <div className="space-y-4">
