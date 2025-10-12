@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Zap, Settings, Users, Clock, Share2 } from 'lucide-react';
+import { Plus, Users, Clock, Share2 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 export default function Home() {
   const [, setLocation] = useLocation();
 
-  const quickStart = () => {
+  const soloCount = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setLocation(`/room/${code}/count`);
+    setLocation(`/room/${code}/solo`);
   };
 
-  const advancedSetup = () => {
+  const multiCount = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    setLocation(`/room/${code}/setup`);
+    setLocation(`/room/${code}/count`);
   };
 
   const recentRooms = [
@@ -35,39 +35,27 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid gap-4">
-          <Card className="p-6">
-            <h3 className="text-lg font-bold mb-2">⚡ 빠른 시작</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              바로 카운팅 시작 (참가자는 나중에 추가)
-            </p>
-            <Button
-              onClick={quickStart}
-              className="w-full"
-              size="lg"
-              data-testid="button-quick-start"
-            >
-              <Zap className="h-5 w-5 mr-2" />
-              즉시 시작
-            </Button>
-          </Card>
+        <div className="space-y-4">
+          <Button
+            onClick={soloCount}
+            className="w-full h-20 text-lg"
+            size="lg"
+            data-testid="button-solo-count"
+          >
+            <Plus className="h-6 w-6 mr-3" />
+            혼자 카운팅 하기
+          </Button>
 
-          <Card className="p-6">
-            <h3 className="text-lg font-bold mb-2">⚙️ 게임 모드</h3>
-            <p className="text-sm text-muted-foreground mb-4">
-              참가자, 모드, 타이머 설정하기
-            </p>
-            <Button
-              onClick={advancedSetup}
-              variant="outline"
-              className="w-full"
-              size="lg"
-              data-testid="button-advanced-setup"
-            >
-              <Settings className="h-5 w-5 mr-2" />
-              설정하고 시작
-            </Button>
-          </Card>
+          <Button
+            onClick={multiCount}
+            variant="outline"
+            className="w-full h-16"
+            size="lg"
+            data-testid="button-multi-count"
+          >
+            <Users className="h-5 w-5 mr-2" />
+            여럿이 카운팅 하기
+          </Button>
         </div>
 
         {recentRooms.length > 0 && (
