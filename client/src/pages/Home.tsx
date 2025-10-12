@@ -126,27 +126,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        <div className="text-center space-y-4 pt-8">
-          <h3 className="text-lg font-bold">어떻게 사용하나요?</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="p-4">
-              <div className="text-3xl mb-2">1️⃣</div>
-              <h4 className="font-bold mb-1">방 만들기</h4>
-              <p className="text-sm text-muted-foreground">10초만에 게임방 생성</p>
-            </Card>
-            <Card className="p-4">
-              <div className="text-3xl mb-2">2️⃣</div>
-              <h4 className="font-bold mb-1">참가자 등록</h4>
-              <p className="text-sm text-muted-foreground">가족, 친구 이름 추가</p>
-            </Card>
-            <Card className="p-4">
-              <div className="text-3xl mb-2">3️⃣</div>
-              <h4 className="font-bold mb-1">카운트 시작</h4>
-              <p className="text-sm text-muted-foreground">실시간으로 점수 기록</p>
-            </Card>
-          </div>
-        </div>
       </div>
     </div>
   );
