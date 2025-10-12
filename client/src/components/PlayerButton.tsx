@@ -43,7 +43,9 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
 
   const handleDecrementClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
-    onDecrement(id);
+    if (count > 0) {
+      onDecrement(id);
+    }
   };
 
   const handleMouseDown = () => {
@@ -74,7 +76,14 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
   }, []);
 
   return (
-    <div className="relative">
+    <div 
+      className={`
+        relative min-h-36 rounded-3xl shadow-lg overflow-hidden
+        ${isLongPressing ? 'ring-4 ring-offset-2 ring-white animate-pulse' : ''}
+      `}
+      style={{ backgroundColor: color }}
+    >
+      {/* 상단 80% - 증가 영역 */}
       <button
         onClick={handleIncrementClick}
         onMouseDown={handleMouseDown}
@@ -82,14 +91,8 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className={`
-          relative w-full min-h-28 rounded-3xl p-6 flex flex-col items-center justify-center gap-3
-          transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
-          ${isLongPressing ? 'ring-4 ring-offset-2 animate-pulse' : ''}
-        `}
-        style={{ 
-          backgroundColor: color,
-        }}
+        className="w-full h-[80%] flex flex-col items-center justify-center gap-2 
+                   transition-transform active:scale-95"
         data-testid={`button-player-${id}`}
       >
         <span className="text-white text-lg font-bold drop-shadow-md" data-testid={`text-player-name-${id}`}>
@@ -100,16 +103,17 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         </span>
       </button>
       
+      {/* 하단 20% - 감소 영역 */}
       <button
         onClick={handleDecrementClick}
         onTouchEnd={handleDecrementClick}
         disabled={count === 0}
-        className="w-full mt-2 h-10 rounded-xl bg-muted hover-elevate active-elevate-2 
-                   flex items-center justify-center transition-transform active:scale-95
+        className="w-full h-[20%] border-t border-white/20 flex items-center justify-center
+                   transition-all hover:bg-black/10 active:bg-black/20
                    disabled:opacity-30 disabled:cursor-not-allowed"
         data-testid={`button-player-decrement-${id}`}
       >
-        <Minus className="h-5 w-5" />
+        <Minus className="h-5 w-5 text-white" />
       </button>
     </div>
   );
