@@ -1,17 +1,10 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Settings2, Share2 } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Check, Share2 } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
-import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 
 interface Player {
   id: string;
@@ -21,15 +14,57 @@ interface Player {
   count: number;
 }
 
-const COLORS = ['#FF8A80', '#80D8FF', '#A7FFEB', '#CE93D8', '#FFCC80', '#B39DDB'];
-const EMOJIS = ['👩', '👨', '👧', '👦', '🧒', '👶', '🙋', '🙋‍♂️'];
+interface PresetLabel {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+const PRESET_LABELS: PresetLabel[] = [
+  { id: 'mom', name: '엄마', emoji: '👩', color: '#FF8A80' },
+  { id: 'dad', name: '아빠', emoji: '👨', color: '#80D8FF' },
+  { id: 'sister', name: '누나', emoji: '👧', color: '#CE93D8' },
+  { id: 'brother', name: '형', emoji: '👦', color: '#A7FFEB' },
+  { id: 'cat', name: '고양이', emoji: '🐱', color: '#FFCC80' },
+  { id: 'dog', name: '강아지', emoji: '🐶', color: '#B39DDB' },
+  { id: 'rabbit', name: '토끼', emoji: '🐰', color: '#FFB3BA' },
+  { id: 'bear', name: '곰', emoji: '🐻', color: '#BAE1FF' },
+  { id: 'fox', name: '여우', emoji: '🦊', color: '#FFFFBA' },
+  { id: 'panda', name: '판다', emoji: '🐼', color: '#BAFFC9' },
+];
 
 export default function QuickCount() {
   const { code } = useParams();
+  const [setupMode, setSetupMode] = useState(true);
+  const [selectedLabels, setSelectedLabels] = useState<Set<string>>(new Set());
   const [players, setPlayers] = useState<Player[]>([]);
   const [showShare, setShowShare] = useState(false);
-  const [showAddPlayer, setShowAddPlayer] = useState(false);
-  const [newPlayerName, setNewPlayerName] = useState('');
+
+  const toggleLabel = (labelId: string) => {
+    setSelectedLabels(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(labelId)) {
+        newSet.delete(labelId);
+      } else {
+        newSet.add(labelId);
+      }
+      return newSet;
+    });
+  };
+
+  const startCounting = () => {
+    const selected = PRESET_LABELS.filter(label => selectedLabels.has(label.id));
+    const newPlayers: Player[] = selected.map(label => ({
+      id: label.id,
+      name: label.name,
+      emoji: label.emoji,
+      color: label.color,
+      count: 0,
+    }));
+    setPlayers(newPlayers);
+    setSetupMode(false);
+  };
 
   const handleIncrement = (playerId: string) => {
     setPlayers(prev => prev.map(p => 
@@ -43,27 +78,60 @@ export default function QuickCount() {
     ));
   };
 
-  const addPlayer = (name: string) => {
-    if (!name.trim()) return;
-    
-    const usedColors = players.map(p => p.color);
-    const availableColor = COLORS.find(c => !usedColors.includes(c)) || COLORS[0];
-    
-    const newPlayer: Player = {
-      id: `player-${Date.now()}`,
-      name: name.trim(),
-      emoji: EMOJIS[players.length % EMOJIS.length],
-      color: availableColor,
-      count: 0,
-    };
-    
-    setPlayers(prev => [...prev, newPlayer]);
-    setNewPlayerName('');
-    setShowAddPlayer(false);
-  };
+  if (setupMode) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-chart-1/20 via-background to-chart-2/20 p-6">
+        <div className="max-w-4xl mx-auto space-y-6 py-8">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold">참가자 선택</h1>
+            <p className="text-muted-foreground">함께 카운팅할 사람들을 선택하세요</p>
+          </div>
 
-  const gridCols = players.length === 0 ? 'grid-cols-1' : 
-                   players.length <= 2 ? 'grid-cols-1' : 
+          <div className="grid grid-cols-2 gap-3">
+            {PRESET_LABELS.map((label) => {
+              const isSelected = selectedLabels.has(label.id);
+              return (
+                <Card
+                  key={label.id}
+                  onClick={() => toggleLabel(label.id)}
+                  className={`p-4 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
+                    isSelected ? 'ring-2 ring-primary' : ''
+                  }`}
+                  style={{ borderColor: isSelected ? label.color : undefined }}
+                  data-testid={`label-${label.id}`}
+                >
+                  {isSelected && (
+                    <div 
+                      className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white"
+                      style={{ backgroundColor: label.color }}
+                    >
+                      <Check className="h-4 w-4" />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{label.emoji}</div>
+                    <div className="font-medium">{label.name}</div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          <Button
+            onClick={startCounting}
+            disabled={selectedLabels.size === 0}
+            className="w-full"
+            size="lg"
+            data-testid="button-start-counting"
+          >
+            카운팅 시작 ({selectedLabels.size}명)
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const gridCols = players.length <= 2 ? 'grid-cols-1' : 
                    players.length <= 6 ? 'grid-cols-2' : 'grid-cols-3';
 
   return (
@@ -72,86 +140,31 @@ export default function QuickCount() {
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <h1 className="text-xl font-bold">카운팅</h1>
           
-          <div className="flex gap-2">
-            <Dialog open={showAddPlayer} onOpenChange={setShowAddPlayer}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="icon" data-testid="button-open-add-player">
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>참가자 추가</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <Input
-                    placeholder="이름 입력..."
-                    value={newPlayerName}
-                    onChange={(e) => setNewPlayerName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        addPlayer(newPlayerName);
-                      }
-                    }}
-                    data-testid="input-quick-player-name"
-                  />
-                  <Button 
-                    onClick={() => addPlayer(newPlayerName)} 
-                    className="w-full"
-                    data-testid="button-confirm-add-player"
-                  >
-                    추가
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowShare(true)}
-              data-testid="button-quick-share"
-            >
-              <Share2 className="h-5 w-5" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowShare(true)}
+            data-testid="button-quick-share"
+          >
+            <Share2 className="h-5 w-5" />
+          </Button>
         </div>
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        {players.length === 0 ? (
-          <div className="max-w-4xl mx-auto">
-            <div className="text-center py-16 space-y-6">
-              <div className="text-6xl">👋</div>
-              <h2 className="text-2xl font-bold">참가자를 추가하세요</h2>
-              <p className="text-muted-foreground">
-                카운팅을 시작하려면 먼저 참가자를 추가해주세요
-              </p>
-              <Button 
-                onClick={() => setShowAddPlayer(true)} 
-                size="lg"
-                data-testid="button-add-first-player"
-              >
-                <Plus className="h-5 w-5 mr-2" />
-                참가자 추가
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className={`grid ${gridCols} gap-4 max-w-4xl mx-auto`}>
-            {players.map((player) => (
-              <PlayerButton
-                key={player.id}
-                id={player.id}
-                name={`${player.emoji} ${player.name}`}
-                color={player.color}
-                count={player.count}
-                onIncrement={handleIncrement}
-                onDecrement={handleDecrement}
-              />
-            ))}
-          </div>
-        )}
+        <div className={`grid ${gridCols} gap-4 max-w-4xl mx-auto`}>
+          {players.map((player) => (
+            <PlayerButton
+              key={player.id}
+              id={player.id}
+              name={`${player.emoji} ${player.name}`}
+              color={player.color}
+              count={player.count}
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
+            />
+          ))}
+        </div>
       </div>
 
       {showShare && <ShareDialog roomCode={code || 'ABC123'} onClose={() => setShowShare(false)} />}
