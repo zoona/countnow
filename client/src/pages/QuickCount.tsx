@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2, Plus, X } from 'lucide-react';
+import { Check, Share2, Edit2, Plus, X, Smile } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession } from '@/lib/storage';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 interface Player {
   id: string;
@@ -109,6 +111,7 @@ export default function QuickCount() {
   const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
   const [customName, setCustomName] = useState('');
   const [customEmoji, setCustomEmoji] = useState('');
+  const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const toggleLabel = (labelId: string) => {
     setSelectedLabels(prev => {
@@ -122,16 +125,16 @@ export default function QuickCount() {
     });
   };
 
+  const handleEmojiSelect = (emojiData: EmojiClickData) => {
+    setCustomEmoji(emojiData.emoji);
+    setEmojiPickerOpen(false);
+  };
+
   const addCustomParticipant = () => {
     const name = customName.trim();
     const emoji = customEmoji.trim();
     
-    console.log('addCustomParticipant called', { name, emoji, customName, customEmoji });
-    
-    if (!name || !emoji) {
-      console.log('Early return: missing name or emoji');
-      return;
-    }
+    if (!name || !emoji) return;
     
     const id = `custom-${Date.now()}`;
     const color = COLOR_POOL[customParticipants.length % COLOR_POOL.length];
@@ -142,8 +145,6 @@ export default function QuickCount() {
       emoji,
       color,
     };
-    
-    console.log('Adding participant:', newParticipant);
     
     setCustomParticipants(prev => [...prev, newParticipant]);
     setSelectedLabels(prev => new Set([...Array.from(prev), id]));
@@ -234,14 +235,20 @@ export default function QuickCount() {
             </div>
             
             <div className="flex gap-2">
-              <Input
-                value={customEmoji}
-                onChange={(e) => setCustomEmoji(e.target.value)}
-                placeholder="🙂"
-                className="w-16 text-center text-xl"
-                maxLength={2}
-                data-testid="input-custom-emoji"
-              />
+              <Popover open={emojiPickerOpen} onOpenChange={setEmojiPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-16 text-xl p-0"
+                    data-testid="button-emoji-picker"
+                  >
+                    {customEmoji || <Smile className="h-5 w-5" />}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 border-0" align="start">
+                  <EmojiPicker onEmojiClick={handleEmojiSelect} />
+                </PopoverContent>
+              </Popover>
               <Input
                 value={customName}
                 onChange={(e) => setCustomName(e.target.value)}
