@@ -73,6 +73,9 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
     };
   }, []);
 
+  // + 버튼 색상에서 어두운 버전 생성
+  const darkerColor = `color-mix(in srgb, ${color} 70%, black)`;
+  
   return (
     <div className="space-y-2">
       <button
@@ -104,12 +107,15 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onClick={handleDecrementClick}
         onTouchEnd={handleDecrementClick}
         disabled={count === 0}
-        className="w-full min-h-12 rounded-xl bg-muted/80 hover-elevate active-elevate-2 
+        className="w-full min-h-12 rounded-2xl shadow-md hover-elevate active-elevate-2 
                    flex items-center justify-center transition-transform active:scale-95
                    disabled:opacity-30 disabled:cursor-not-allowed"
+        style={{
+          backgroundColor: count === 0 ? '#999' : darkerColor,
+        }}
         data-testid={`button-player-decrement-${id}`}
       >
-        <Minus className="h-6 w-6" />
+        <Minus className="h-6 w-6 text-white drop-shadow-md" />
       </button>
     </div>
   );
