@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Badge } from '@/components/ui/badge';
+import { Minus } from 'lucide-react';
 
 interface PlayerButtonProps {
   id: string;
@@ -12,7 +12,6 @@ interface PlayerButtonProps {
 
 export default function PlayerButton({ id, name, color, count, onIncrement, onDecrement }: PlayerButtonProps) {
   const [isLongPressing, setIsLongPressing] = useState(false);
-  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const incrementInterval = useRef<NodeJS.Timeout | null>(null);
 
@@ -36,33 +35,15 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
     setIsLongPressing(false);
   };
 
-  const handleClick = () => {
+  const handleIncrementClick = () => {
     if (!isLongPressing) {
       onIncrement(id);
     }
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartX(e.touches[0].clientX);
-    startLongPress();
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX !== null) {
-      const touchCurrentX = e.touches[0].clientX;
-      const diff = touchStartX - touchCurrentX;
-      
-      if (diff > 80) {
-        endLongPress();
-        onDecrement(id);
-        setTouchStartX(null);
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    endLongPress();
-    setTouchStartX(null);
+  const handleDecrementClick = (e: React.MouseEvent | React.TouchEvent) => {
+    e.stopPropagation();
+    onDecrement(id);
   };
 
   const handleMouseDown = () => {
@@ -77,6 +58,14 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
     endLongPress();
   };
 
+  const handleTouchStart = () => {
+    startLongPress();
+  };
+
+  const handleTouchEnd = () => {
+    endLongPress();
+  };
+
   useEffect(() => {
     return () => {
       if (longPressTimer.current) clearTimeout(longPressTimer.current);
@@ -85,30 +74,44 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
   }, []);
 
   return (
-    <button
-      onClick={handleClick}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      className={`
-        relative min-h-28 rounded-3xl p-6 flex flex-col items-center justify-center gap-3
-        transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
-        ${isLongPressing ? 'ring-4 ring-offset-2 animate-pulse' : ''}
-      `}
-      style={{ 
-        backgroundColor: color,
-      }}
-      data-testid={`button-player-${id}`}
-    >
-      <span className="text-white text-lg font-bold drop-shadow-md" data-testid={`text-player-name-${id}`}>
-        {name}
-      </span>
-      <span className="text-white text-6xl font-extrabold drop-shadow-lg" data-testid={`text-player-count-${id}`}>
-        {count}
-      </span>
-    </button>
+    <div className="relative">
+      <button
+        onClick={handleIncrementClick}
+        onMouseDown={handleMouseDown}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className={`
+          relative w-full min-h-28 rounded-3xl p-6 flex flex-col items-center justify-center gap-3
+          transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
+          ${isLongPressing ? 'ring-4 ring-offset-2 animate-pulse' : ''}
+        `}
+        style={{ 
+          backgroundColor: color,
+        }}
+        data-testid={`button-player-${id}`}
+      >
+        <span className="text-white text-lg font-bold drop-shadow-md" data-testid={`text-player-name-${id}`}>
+          {name}
+        </span>
+        <span className="text-white text-6xl font-extrabold drop-shadow-lg" data-testid={`text-player-count-${id}`}>
+          {count}
+        </span>
+      </button>
+      
+      <button
+        onClick={handleDecrementClick}
+        onTouchEnd={handleDecrementClick}
+        disabled={count === 0}
+        className="w-full mt-2 h-10 rounded-xl bg-muted hover-elevate active-elevate-2 
+                   flex items-center justify-center gap-2 transition-transform active:scale-95
+                   disabled:opacity-30 disabled:cursor-not-allowed"
+        data-testid={`button-player-decrement-${id}`}
+      >
+        <Minus className="h-4 w-4" />
+        <span className="text-sm font-medium">-1</span>
+      </button>
+    </div>
   );
 }
