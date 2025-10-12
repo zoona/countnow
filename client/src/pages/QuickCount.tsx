@@ -187,14 +187,14 @@ export default function QuickCount() {
             {LABEL_GROUPS.map((group) => (
               <div key={group.title} className="space-y-3">
                 <h3 className="text-sm font-semibold text-muted-foreground px-1">{group.title}</h3>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {group.labels.map((label) => {
                     const isSelected = selectedLabels.has(label.id);
                     return (
                       <Card
                         key={label.id}
                         onClick={() => toggleLabel(label.id)}
-                        className={`p-4 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
+                        className={`p-3 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
                           isSelected ? 'ring-2 ring-primary' : ''
                         }`}
                         style={{ borderColor: isSelected ? label.color : undefined }}
@@ -202,15 +202,15 @@ export default function QuickCount() {
                       >
                         {isSelected && (
                           <div 
-                            className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white"
+                            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white"
                             style={{ backgroundColor: label.color }}
                           >
-                            <Check className="h-4 w-4" />
+                            <Check className="h-3 w-3" />
                           </div>
                         )}
-                        <div className="flex items-center gap-3">
-                          <div className="text-3xl">{label.emoji}</div>
-                          <div className="font-medium">{label.name}</div>
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="text-2xl">{label.emoji}</div>
+                          <div className="text-xs font-medium text-center">{label.name}</div>
                         </div>
                       </Card>
                     );
