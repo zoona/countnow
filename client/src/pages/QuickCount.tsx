@@ -24,6 +24,9 @@ interface PresetLabel {
 }
 
 const PRESET_LABELS: PresetLabel[] = [
+  // 나
+  { id: 'me', name: '나', emoji: '😊', color: '#81C784' },
+  
   // 가족
   { id: 'mom', name: '엄마', emoji: '👩', color: '#FF8A80' },
   { id: 'dad', name: '아빠', emoji: '👨', color: '#80D8FF' },
