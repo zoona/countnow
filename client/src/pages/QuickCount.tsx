@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Check, Share2 } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
+import { saveSession, getSession } from '@/lib/storage';
 
 interface Player {
   id: string;
@@ -45,9 +46,23 @@ const PRESET_LABELS: PresetLabel[] = [
 
 export default function QuickCount() {
   const { code } = useParams();
-  const [setupMode, setSetupMode] = useState(true);
+  const [setupMode, setSetupMode] = useState(() => {
+    if (code) {
+      const saved = getSession(code);
+      return !saved || saved.type !== 'multi' || saved.players.length === 0;
+    }
+    return true;
+  });
   const [selectedLabels, setSelectedLabels] = useState<Set<string>>(new Set());
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState<Player[]>(() => {
+    if (code) {
+      const saved = getSession(code);
+      if (saved && saved.type === 'multi') {
+        return saved.players;
+      }
+    }
+    return [];
+  });
   const [showShare, setShowShare] = useState(false);
 
   const toggleLabel = (labelId: string) => {
@@ -86,6 +101,26 @@ export default function QuickCount() {
       p.id === playerId ? { ...p, count: Math.max(0, p.count - 1) } : p
     ));
   };
+
+  useEffect(() => {
+    if (!code || setupMode || players.length === 0) return;
+
+    const save = () => {
+      saveSession({
+        code,
+        type: 'multi',
+        players,
+        timestamp: Date.now(),
+      });
+    };
+
+    const interval = setInterval(save, 2000);
+
+    return () => {
+      clearInterval(interval);
+      save();
+    };
+  }, [code, players, setupMode]);
 
   if (setupMode) {
     return (

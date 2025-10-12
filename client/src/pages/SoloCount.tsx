@@ -1,12 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, Share2, Minus } from 'lucide-react';
 import { useParams } from 'wouter';
 import ShareDialog from '@/components/ShareDialog';
+import { saveSession, getSession } from '@/lib/storage';
 
 export default function SoloCount() {
   const { code } = useParams();
-  const [count, setCount] = useState(0);
+  const [count, setCount] = useState(() => {
+    if (code) {
+      const saved = getSession(code);
+      if (saved && saved.type === 'solo') {
+        return saved.count;
+      }
+    }
+    return 0;
+  });
   const [showShare, setShowShare] = useState(false);
 
   const increment = () => setCount(prev => prev + 1);
@@ -15,6 +24,26 @@ export default function SoloCount() {
 
   const mainColor = '#80D8FF';
   const darkerColor = `color-mix(in srgb, ${mainColor} 70%, black)`;
+
+  useEffect(() => {
+    if (!code) return;
+
+    const save = () => {
+      saveSession({
+        code,
+        type: 'solo',
+        count,
+        timestamp: Date.now(),
+      });
+    };
+
+    const interval = setInterval(save, 2000);
+
+    return () => {
+      clearInterval(interval);
+      save();
+    };
+  }, [code, count]);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">

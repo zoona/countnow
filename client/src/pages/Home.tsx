@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Users, Clock, Share2 } from 'lucide-react';
+import { Plus, Users, Clock, Trash2 } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { getSessions, deleteSession } from '@/lib/storage';
+import type { CountSession } from '@/lib/storage';
 
 export default function Home() {
   const [, setLocation] = useLocation();
+  const [recentSessions, setRecentSessions] = useState<CountSession[]>([]);
+
+  useEffect(() => {
+    setRecentSessions(getSessions());
+  }, []);
 
   const soloCount = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -17,10 +24,23 @@ export default function Home() {
     setLocation(`/room/${code}/count`);
   };
 
-  const recentRooms = [
-    { code: 'ABC123', name: '주말가족게임', players: 3, time: '5분 전' },
-    { code: 'XYZ789', name: '회식모임', players: 5, time: '1시간 전' },
-  ];
+  const handleDeleteSession = (code: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteSession(code);
+    setRecentSessions(getSessions());
+  };
+
+  const formatTime = (timestamp: number) => {
+    const diff = Date.now() - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '방금 전';
+    if (minutes < 60) return `${minutes}분 전`;
+    if (hours < 24) return `${hours}시간 전`;
+    return `${days}일 전`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-chart-1/20 via-background to-chart-2/20 p-6">
@@ -58,32 +78,48 @@ export default function Home() {
           </Button>
         </div>
 
-        {recentRooms.length > 0 && (
+        {recentSessions.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold">최근 방</h2>
+            <h2 className="text-xl font-bold">최근 카운팅</h2>
             <div className="space-y-3">
-              {recentRooms.map((room) => (
+              {recentSessions.map((session) => (
                 <Card
-                  key={room.code}
-                  className="p-4 cursor-pointer hover-elevate"
-                  onClick={() => setLocation(`/room/${room.code}`)}
-                  data-testid={`card-recent-room-${room.code}`}
+                  key={session.code}
+                  className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                  onClick={() => setLocation(session.type === 'solo' ? `/room/${session.code}/solo` : `/room/${session.code}/count`)}
+                  data-testid={`card-recent-session-${session.code}`}
                 >
                   <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold">{room.name}</h3>
+                    <div className="flex-1">
+                      <h3 className="font-bold">
+                        {session.type === 'solo' ? '혼자 카운팅' : '여럿이 카운팅'}
+                      </h3>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <Users className="h-4 w-4" />
-                          {room.players}명
-                        </span>
+                        {session.type === 'solo' ? (
+                          <span className="flex items-center gap-1">
+                            <Plus className="h-4 w-4" />
+                            {session.count}
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <Users className="h-4 w-4" />
+                            {session.players.length}명
+                          </span>
+                        )}
                         <span className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {room.time}
+                          {formatTime(session.timestamp)}
                         </span>
                       </div>
                     </div>
-                    <Share2 className="h-5 w-5 text-muted-foreground" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => handleDeleteSession(session.code, e)}
+                      data-testid={`button-delete-session-${session.code}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </Card>
               ))}
