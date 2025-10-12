@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2, Plus, X, Smile } from 'lucide-react';
+import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
@@ -9,6 +9,17 @@ import { saveSession, getSession } from '@/lib/storage';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Player {
   id: string;
@@ -185,6 +196,10 @@ export default function QuickCount() {
     setPlayers(prev => prev.map(p => 
       p.id === playerId ? { ...p, count: Math.max(0, p.count - 1) } : p
     ));
+  };
+
+  const resetAllCounts = () => {
+    setPlayers(prev => prev.map(p => ({ ...p, count: 0 })));
   };
 
   const handleTitleSave = () => {
@@ -424,15 +439,40 @@ export default function QuickCount() {
             )}
           </div>
           
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setShowShare(true)}
-            data-testid="button-quick-share"
-            className="flex-shrink-0"
-          >
-            <Share2 className="h-5 w-5" />
-          </Button>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setShowShare(true)}
+              data-testid="button-quick-share"
+            >
+              <Share2 className="h-5 w-5" />
+            </Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  data-testid="button-multi-reset"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>모든 카운트를 리셋하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    모든 참가자의 카운트가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={resetAllCounts}>리셋</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
 

@@ -3,8 +3,19 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Users, Clock, Trash2 } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { getSessions, deleteSession } from '@/lib/storage';
+import { getSessions, deleteSession, clearAllSessions } from '@/lib/storage';
 import type { CountSession } from '@/lib/storage';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -28,6 +39,11 @@ export default function Home() {
     e.stopPropagation();
     deleteSession(code);
     setRecentSessions(getSessions());
+  };
+
+  const handleClearAllSessions = () => {
+    clearAllSessions();
+    setRecentSessions([]);
   };
 
   const formatTime = (timestamp: number) => {
@@ -80,7 +96,33 @@ export default function Home() {
 
         {recentSessions.length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-xl font-bold">최근 카운팅</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold">최근 카운팅</h2>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    data-testid="button-clear-all-sessions"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    모두 삭제
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>모든 카운팅 기록을 삭제하시겠습니까?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      모든 최근 카운팅 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAllSessions}>삭제</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
             <div className="space-y-3">
               {recentSessions.map((session) => (
                 <Card

@@ -5,6 +5,17 @@ import { useParams } from 'wouter';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession } from '@/lib/storage';
 import { Input } from '@/components/ui/input';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 export default function SoloCount() {
   const { code } = useParams();
@@ -133,14 +144,29 @@ export default function SoloCount() {
               <Share2 className="h-5 w-5" />
             </Button>
             
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={reset}
-              data-testid="button-solo-reset"
-            >
-              <RotateCcw className="h-5 w-5" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  data-testid="button-solo-reset"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>카운트를 리셋하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    현재 카운트({count})가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>취소</AlertDialogCancel>
+                  <AlertDialogAction onClick={reset}>리셋</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

@@ -72,3 +72,11 @@ export function deleteSession(code: string) {
     console.error('Failed to delete session:', error);
   }
 }
+
+export function clearAllSessions() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (error) {
+    console.error('Failed to clear all sessions:', error);
+  }
+}
