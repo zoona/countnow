@@ -105,12 +105,11 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onTouchEnd={handleDecrementClick}
         disabled={count === 0}
         className="w-full mt-2 h-10 rounded-xl bg-muted hover-elevate active-elevate-2 
-                   flex items-center justify-center gap-2 transition-transform active:scale-95
+                   flex items-center justify-center transition-transform active:scale-95
                    disabled:opacity-30 disabled:cursor-not-allowed"
         data-testid={`button-player-decrement-${id}`}
       >
-        <Minus className="h-4 w-4" />
-        <span className="text-sm font-medium">-1</span>
+        <Minus className="h-5 w-5" />
       </button>
     </div>
   );
