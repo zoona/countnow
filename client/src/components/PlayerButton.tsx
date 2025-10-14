@@ -107,7 +107,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onClick={handleDecrementClick}
         onTouchEnd={handleDecrementClick}
         disabled={count === 0}
-        className="w-full min-h-12 rounded-2xl shadow-md hover-elevate active-elevate-2 
+        className="w-full h-16 rounded-3xl shadow-lg hover-elevate active-elevate-2 
                    flex items-center justify-center transition-transform active:scale-95
                    disabled:opacity-30 disabled:cursor-not-allowed"
         style={{

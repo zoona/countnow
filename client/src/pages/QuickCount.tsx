@@ -5,7 +5,7 @@ import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
-import { saveSession, getSession } from '@/lib/storage';
+import { saveSession, getSession, saveCustomParticipants, getCustomParticipants } from '@/lib/storage';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -112,16 +112,25 @@ export default function QuickCount() {
     if (code) {
       const saved = getSession(code);
       if (saved && saved.type === 'multi') {
-        return saved.title || '';
+        return saved.title || new Date().toLocaleDateString('ko-KR');
       }
     }
-    return '';
+    return new Date().toLocaleDateString('ko-KR');
   });
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
+  const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>(() => getCustomParticipants());
   const [customName, setCustomName] = useState('');
-  const [customEmoji, setCustomEmoji] = useState('😊');
+  const [customEmoji, setCustomEmoji] = useState(() => {
+    const usedEmojis = getCustomParticipants().map(p => p.emoji);
+    const allEmojis = [
+      '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😔', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥'
+    ];
+    const availableEmojis = allEmojis.filter(emoji => !usedEmojis.includes(emoji));
+    return availableEmojis.length > 0 
+      ? availableEmojis[Math.floor(Math.random() * availableEmojis.length)]
+      : '😊';
+  });
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
 
   const toggleLabel = (labelId: string) => {
@@ -141,6 +150,23 @@ export default function QuickCount() {
     setEmojiPickerOpen(false);
   };
 
+  const getRandomEmoji = () => {
+    const allEmojis = [
+      '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😔', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥'
+    ];
+    
+    // 현재 커스텀 참가자들이 사용 중인 이모지들
+    const usedEmojis = customParticipants.map(p => p.emoji);
+    
+    // 사용되지 않은 이모지들만 필터링
+    const availableEmojis = allEmojis.filter(emoji => !usedEmojis.includes(emoji));
+    
+    // 사용 가능한 이모지가 있으면 랜덤 선택, 없으면 기본 이모지
+    return availableEmojis.length > 0 
+      ? availableEmojis[Math.floor(Math.random() * availableEmojis.length)]
+      : '😊';
+  };
+
   const addCustomParticipant = () => {
     const name = customName.trim();
     const emoji = customEmoji.trim();
@@ -157,14 +183,18 @@ export default function QuickCount() {
       color,
     };
     
-    setCustomParticipants(prev => [...prev, newParticipant]);
+    const updatedParticipants = [...customParticipants, newParticipant];
+    setCustomParticipants(updatedParticipants);
+    saveCustomParticipants(updatedParticipants);
     setSelectedLabels(prev => new Set([...Array.from(prev), id]));
     setCustomName('');
-    setCustomEmoji('😊');
+    setCustomEmoji(getRandomEmoji());
   };
 
   const removeCustomParticipant = (id: string) => {
-    setCustomParticipants(prev => prev.filter(p => p.id !== id));
+    const updatedParticipants = customParticipants.filter(p => p.id !== id);
+    setCustomParticipants(updatedParticipants);
+    saveCustomParticipants(updatedParticipants);
     setSelectedLabels(prev => {
       const newSet = new Set(prev);
       newSet.delete(id);
@@ -245,8 +275,8 @@ export default function QuickCount() {
         <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
           <div className="max-w-4xl mx-auto space-y-3">
             <div className="text-center space-y-1">
-              <h1 className="text-2xl font-bold">참가자 선택</h1>
-              <p className="text-sm text-muted-foreground">함께 카운팅할 사람들을 선택하세요</p>
+              <h1 className="text-2xl font-bold">함께할 사람</h1>
+              <p className="text-sm text-muted-foreground">같이 숫자 세기를 할 사람들을 선택하세요</p>
             </div>
             
             <div className="flex gap-2">
@@ -293,7 +323,7 @@ export default function QuickCount() {
               size="lg"
               data-testid="button-start-counting"
             >
-              카운팅 시작 ({selectedLabels.size}명)
+              세기 시작 ({selectedLabels.size}명)
             </Button>
           </div>
         </div>
@@ -309,36 +339,41 @@ export default function QuickCount() {
                     return (
                       <Card
                         key={label.id}
-                        onClick={() => toggleLabel(label.id)}
-                        className={`p-2.5 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
+                        className={`p-2.5 transition-all hover-elevate active-elevate-2 relative ${
                           isSelected ? 'ring-2 ring-primary' : ''
                         }`}
                         style={{ borderColor: isSelected ? label.color : undefined }}
                         data-testid={`label-${label.id}`}
                       >
+                        <div 
+                          className="cursor-pointer"
+                          onClick={() => toggleLabel(label.id)}
+                        >
+                          {isSelected && (
+                            <div 
+                              className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-green-500"
+                            >
+                              <Check className="h-3 w-3" />
+                            </div>
+                          )}
+                          <div className="flex flex-col items-center gap-1">
+                            <div className="text-2xl">{label.emoji}</div>
+                            <div className="text-xs font-medium text-center">{label.name}</div>
+                          </div>
+                        </div>
                         <Button
                           variant="destructive"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             removeCustomParticipant(label.id);
                           }}
-                          className="absolute -top-3 -left-3 h-14 w-14 rounded-full p-0 z-10"
+                          className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 h-6 px-2 text-xs"
                           data-testid={`button-remove-${label.id}`}
                         >
-                          <X className="h-5 w-5" />
+                          <X className="h-3 w-3 mr-1" />
+                          삭제
                         </Button>
-                        {isSelected && (
-                          <div 
-                            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white"
-                            style={{ backgroundColor: label.color }}
-                          >
-                            <Check className="h-3 w-3" />
-                          </div>
-                        )}
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="text-2xl">{label.emoji}</div>
-                          <div className="text-xs font-medium text-center">{label.name}</div>
-                        </div>
                       </Card>
                     );
                   })}
@@ -364,8 +399,7 @@ export default function QuickCount() {
                       >
                         {isSelected && (
                           <div 
-                            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white"
-                            style={{ backgroundColor: label.color }}
+                            className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-green-500"
                           >
                             <Check className="h-3 w-3" />
                           </div>
@@ -394,7 +428,6 @@ export default function QuickCount() {
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-2xl">👥</span>
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1">
                 <Input
@@ -424,8 +457,11 @@ export default function QuickCount() {
             ) : (
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <h1 className="text-xl font-bold truncate" data-testid="text-session-title">
-                  {title || '여럿이 카운팅'}
+                  {title}
                 </h1>
+                <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                  같이 세기
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -461,9 +497,9 @@ export default function QuickCount() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>모든 카운트를 리셋하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogTitle>모든 숫자를 리셋하시겠습니까?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    모든 참가자의 카운트가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
+                    모든 참가자의 숫자가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

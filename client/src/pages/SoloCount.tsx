@@ -19,6 +19,15 @@ import {
 
 export default function SoloCount() {
   const { code } = useParams();
+  const [startedAt] = useState(() => {
+    if (code) {
+      const saved = getSession(code);
+      if (saved && saved.type === 'solo') {
+        return saved.startedAt || saved.timestamp;
+      }
+    }
+    return Date.now();
+  });
   const [count, setCount] = useState(() => {
     if (code) {
       const saved = getSession(code);
@@ -32,10 +41,10 @@ export default function SoloCount() {
     if (code) {
       const saved = getSession(code);
       if (saved && saved.type === 'solo') {
-        return saved.title || '';
+        return saved.title || new Date().toLocaleDateString('ko-KR');
       }
     }
-    return '';
+    return new Date().toLocaleDateString('ko-KR');
   });
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
@@ -89,7 +98,6 @@ export default function SoloCount() {
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-2xl">🎯</span>
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1">
                 <Input
@@ -119,8 +127,11 @@ export default function SoloCount() {
             ) : (
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <h1 className="text-xl font-bold truncate" data-testid="text-session-title">
-                  {title || '혼자 카운팅'}
+                  {title}
                 </h1>
+                <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                  혼자 세기
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -156,9 +167,9 @@ export default function SoloCount() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>카운트를 리셋하시겠습니까?</AlertDialogTitle>
+                  <AlertDialogTitle>숫자를 리셋하시겠습니까?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    현재 카운트({count})가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
+                    현재 숫자({count})가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -177,7 +188,7 @@ export default function SoloCount() {
             <div className="text-9xl font-extrabold mb-4" data-testid="text-solo-count">
               {count}
             </div>
-            <p className="text-muted-foreground">탭해서 카운트 증가</p>
+            <p className="text-muted-foreground">탭해서 숫자 증가</p>
           </div>
 
           <div className="space-y-2">
@@ -194,7 +205,7 @@ export default function SoloCount() {
             <button
               onClick={decrement}
               disabled={count === 0}
-              className="w-full min-h-12 rounded-2xl shadow-md hover-elevate active-elevate-2 
+              className="w-full h-16 rounded-3xl shadow-lg hover-elevate active-elevate-2 
                        flex items-center justify-center transition-transform active:scale-95
                        disabled:opacity-30 disabled:cursor-not-allowed"
               style={{

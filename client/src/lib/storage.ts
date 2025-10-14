@@ -3,6 +3,7 @@ interface SoloSession {
   type: 'solo';
   count: number;
   timestamp: number;
+  startedAt?: number;
   title?: string;
 }
 
@@ -17,6 +18,7 @@ interface MultiSession {
     count: number;
   }[];
   timestamp: number;
+  startedAt?: number;
   title?: string;
 }
 
@@ -78,5 +80,33 @@ export function clearAllSessions() {
     localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
     console.error('Failed to clear all sessions:', error);
+  }
+}
+
+// Custom participants storage
+const CUSTOM_PARTICIPANTS_KEY = 'countnow_custom_participants';
+
+interface PresetLabel {
+  id: string;
+  name: string;
+  emoji: string;
+  color: string;
+}
+
+export function saveCustomParticipants(participants: PresetLabel[]) {
+  try {
+    localStorage.setItem(CUSTOM_PARTICIPANTS_KEY, JSON.stringify(participants));
+  } catch (error) {
+    console.error('Failed to save custom participants:', error);
+  }
+}
+
+export function getCustomParticipants(): PresetLabel[] {
+  try {
+    const data = localStorage.getItem(CUSTOM_PARTICIPANTS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch (error) {
+    console.error('Failed to get custom participants:', error);
+    return [];
   }
 }

@@ -59,97 +59,108 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-chart-1/20 via-background to-chart-2/20 p-6">
-      <div className="max-w-4xl mx-auto space-y-8 py-8">
-        <div className="text-center space-y-4">
-          <div className="text-6xl mb-4">🎯</div>
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-chart-1 to-chart-2 bg-clip-text text-transparent">
-            CountNow
-          </h1>
-          <p className="text-xl text-muted-foreground">
-            즉흥 카운팅 - 지금 바로 시작하세요
-          </p>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-md mx-auto min-h-screen flex flex-col px-6">
+        {/* 헤더 */}
+        <div className="pt-16 pb-12 text-center">
+          <h1 className="text-3xl font-bold tracking-tight mb-2">숫자 세기</h1>
+          <p className="text-sm text-muted-foreground">간단하고 직관적인 카운팅</p>
         </div>
-
-        <div className="space-y-4">
+        
+        {/* 메인 버튼 영역 */}
+        <div className="space-y-3 mb-12">
           <Button
             onClick={soloCount}
-            className="w-full h-20 text-lg"
+            className="w-full h-24 text-lg font-semibold rounded-2xl shadow-sm hover:shadow-md transition-all"
             size="lg"
             data-testid="button-solo-count"
           >
-            <Plus className="h-6 w-6 mr-3" />
-            혼자 카운팅 하기
+            <div className="flex flex-col items-center gap-1">
+              <Plus className="h-6 w-6" />
+              <span>혼자 세기</span>
+            </div>
           </Button>
 
           <Button
             onClick={multiCount}
             variant="outline"
-            className="w-full h-16"
+            className="w-full h-24 text-lg font-semibold rounded-2xl border-2 hover:bg-muted/50 transition-all"
             size="lg"
             data-testid="button-multi-count"
           >
-            <Users className="h-5 w-5 mr-2" />
-            여럿이 카운팅 하기
+            <div className="flex flex-col items-center gap-1">
+              <Users className="h-6 w-6" />
+              <span>같이 세기</span>
+            </div>
           </Button>
         </div>
 
         {recentSessions.length > 0 && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">최근 카운팅</h2>
+          <div className="flex-1 pb-8">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-medium text-muted-foreground">최근 기록</h2>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
+                    className="h-8 text-xs text-muted-foreground hover:text-destructive"
                     data-testid="button-clear-all-sessions"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    모두 삭제
+                    <Trash2 className="h-3.5 w-3.5 mr-1" />
+                    전체 삭제
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent className="rounded-2xl">
                   <AlertDialogHeader>
-                    <AlertDialogTitle>모든 카운팅 기록을 삭제하시겠습니까?</AlertDialogTitle>
+                    <AlertDialogTitle>모든 기록을 삭제하시겠습니까?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      모든 최근 카운팅 기록이 삭제됩니다. 이 작업은 되돌릴 수 없습니다.
+                      이 작업은 되돌릴 수 없습니다.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>취소</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleClearAllSessions}>삭제</AlertDialogAction>
+                    <AlertDialogCancel className="rounded-xl">취소</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleClearAllSessions} className="rounded-xl">삭제</AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {recentSessions.map((session) => (
-                <Card
+                <div
                   key={session.code}
-                  className="p-4 cursor-pointer hover-elevate active-elevate-2"
+                  className="group relative p-3.5 cursor-pointer rounded-xl border border-border/50 bg-card hover:border-border hover:shadow-sm transition-all"
                   onClick={() => setLocation(session.type === 'solo' ? `/room/${session.code}/solo` : `/room/${session.code}/count`)}
                   data-testid={`card-recent-session-${session.code}`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-bold" data-testid={`text-session-title-${session.code}`}>
-                        {session.title || (session.type === 'solo' ? '혼자 카운팅' : '여럿이 카운팅')}
-                      </h3>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <h3 className="font-medium text-sm truncate" data-testid={`text-session-title-${session.code}`}>
+                          {session.title}
+                        </h3>
+                        <span className={`shrink-0 text-xs px-1.5 py-0.5 rounded-md font-medium ${
+                          session.type === 'solo' 
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' 
+                            : 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300'
+                        }`}>
+                          {session.type === 'solo' ? '혼자' : '같이'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         {session.type === 'solo' ? (
                           <span className="flex items-center gap-1">
-                            <Plus className="h-4 w-4" />
-                            {session.count}
+                            <Plus className="h-3.5 w-3.5" />
+                            <span className="font-medium">{session.count}</span>
                           </span>
                         ) : (
                           <span className="flex items-center gap-1">
-                            <Users className="h-4 w-4" />
-                            {session.players.length}명
+                            <Users className="h-3.5 w-3.5" />
+                            <span className="font-medium">{session.players.length}명</span>
                           </span>
                         )}
                         <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
+                          <Clock className="h-3.5 w-3.5" />
                           {formatTime(session.timestamp)}
                         </span>
                       </div>
@@ -157,13 +168,14 @@ export default function Home() {
                     <Button
                       variant="ghost"
                       size="icon"
+                      className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity -mt-0.5 -mr-0.5"
                       onClick={(e) => handleDeleteSession(session.code, e)}
                       data-testid={`button-delete-session-${session.code}`}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           </div>

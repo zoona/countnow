@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.env
+.env.local
+dist
+.vite
+.replit
+.local
+attached_assets
+docs
+
+
