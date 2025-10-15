@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { RotateCcw, Share2, Minus, Edit2, Check } from 'lucide-react';
 import { useParams } from 'wouter';
 import ShareDialog from '@/components/ShareDialog';
-import { saveSession, getSession } from '@/lib/storage';
+import { saveSession, getSession, subscribeToSession } from '@/lib/supabaseStorage';
 import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
@@ -19,35 +19,45 @@ import {
 
 export default function SoloCount() {
   const { code } = useParams();
-  const [startedAt] = useState(() => {
-    if (code) {
-      const saved = getSession(code);
-      if (saved && saved.type === 'solo') {
-        return saved.startedAt || saved.timestamp;
-      }
-    }
-    return Date.now();
-  });
-  const [count, setCount] = useState(() => {
-    if (code) {
-      const saved = getSession(code);
-      if (saved && saved.type === 'solo') {
-        return saved.count;
-      }
-    }
-    return 0;
-  });
-  const [title, setTitle] = useState(() => {
-    if (code) {
-      const saved = getSession(code);
-      if (saved && saved.type === 'solo') {
-        return saved.title || new Date().toLocaleDateString('ko-KR');
-      }
-    }
-    return new Date().toLocaleDateString('ko-KR');
-  });
+  const [startedAt] = useState(Date.now());
+  const [count, setCount] = useState(0);
+  const [title, setTitle] = useState(new Date().toLocaleDateString('ko-KR'));
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load session from Supabase
+  useEffect(() => {
+    if (!code) {
+      setIsLoading(false);
+      return;
+    }
+
+    const loadSession = async () => {
+      const saved = await getSession(code);
+      if (saved && saved.type === 'solo') {
+        setCount(saved.count);
+        setTitle(saved.title || new Date().toLocaleDateString('ko-KR'));
+      }
+      setIsLoading(false);
+    };
+
+    loadSession();
+  }, [code]);
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (!code) return;
+
+    const unsubscribe = subscribeToSession(code, (session) => {
+      if (session.type === 'solo') {
+        setCount(session.count);
+        setTitle(session.title || new Date().toLocaleDateString('ko-KR'));
+      }
+    });
+
+    return unsubscribe;
+  }, [code]);
 
   const increment = () => setCount(prev => prev + 1);
   const decrement = () => setCount(prev => Math.max(0, prev - 1));

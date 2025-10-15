@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Plus, Users, Clock, Trash2 } from 'lucide-react';
 import { useLocation } from 'wouter';
-import { getSessions, deleteSession, clearAllSessions } from '@/lib/storage';
-import type { CountSession } from '@/lib/storage';
+import { getSessions, deleteSession, clearAllSessions } from '@/lib/supabaseStorage';
+import type { CountSession } from '@/lib/supabaseStorage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,7 +22,11 @@ export default function Home() {
   const [recentSessions, setRecentSessions] = useState<CountSession[]>([]);
 
   useEffect(() => {
-    setRecentSessions(getSessions());
+    const loadSessions = async () => {
+      const sessions = await getSessions();
+      setRecentSessions(sessions);
+    };
+    loadSessions();
   }, []);
 
   const soloCount = () => {
@@ -35,14 +39,15 @@ export default function Home() {
     setLocation(`/room/${code}/count`);
   };
 
-  const handleDeleteSession = (code: string, e: React.MouseEvent) => {
+  const handleDeleteSession = async (code: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    deleteSession(code);
-    setRecentSessions(getSessions());
+    await deleteSession(code);
+    const sessions = await getSessions();
+    setRecentSessions(sessions);
   };
 
-  const handleClearAllSessions = () => {
-    clearAllSessions();
+  const handleClearAllSessions = async () => {
+    await clearAllSessions();
     setRecentSessions([]);
   };
 

@@ -5,7 +5,7 @@ import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw } from 'lucide-react';
 import { useParams } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
-import { saveSession, getSession, saveCustomParticipants, getCustomParticipants } from '@/lib/storage';
+import { saveSession, getSession, saveCustomParticipants, getCustomParticipants, subscribeToSession } from '@/lib/supabaseStorage';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -91,35 +91,48 @@ const LABEL_GROUPS: LabelGroup[] = [
 
 export default function QuickCount() {
   const { code } = useParams();
-  const [setupMode, setSetupMode] = useState(() => {
-    if (code) {
-      const saved = getSession(code);
-      return !saved || saved.type !== 'multi' || saved.players.length === 0;
-    }
-    return true;
-  });
+  const [setupMode, setSetupMode] = useState(true);
   const [selectedLabels, setSelectedLabels] = useState<Set<string>>(new Set());
-  const [players, setPlayers] = useState<Player[]>(() => {
-    if (code) {
-      const saved = getSession(code);
-      if (saved && saved.type === 'multi') {
-        return saved.players;
-      }
-    }
-    return [];
-  });
-  const [title, setTitle] = useState(() => {
-    if (code) {
-      const saved = getSession(code);
-      if (saved && saved.type === 'multi') {
-        return saved.title || new Date().toLocaleDateString('ko-KR');
-      }
-    }
-    return new Date().toLocaleDateString('ko-KR');
-  });
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [title, setTitle] = useState(new Date().toLocaleDateString('ko-KR'));
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>(() => getCustomParticipants());
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load session from Supabase
+  useEffect(() => {
+    if (!code) {
+      setIsLoading(false);
+      return;
+    }
+
+    const loadSession = async () => {
+      const saved = await getSession(code);
+      if (saved && saved.type === 'multi') {
+        setPlayers(saved.players);
+        setTitle(saved.title || new Date().toLocaleDateString('ko-KR'));
+        setSetupMode(saved.players.length === 0);
+      }
+      setIsLoading(false);
+    };
+
+    loadSession();
+  }, [code]);
+
+  // Subscribe to realtime updates
+  useEffect(() => {
+    if (!code || setupMode) return;
+
+    const unsubscribe = subscribeToSession(code, (session) => {
+      if (session.type === 'multi') {
+        setPlayers(session.players);
+        setTitle(session.title || new Date().toLocaleDateString('ko-KR'));
+      }
+    });
+
+    return unsubscribe;
+  }, [code, setupMode]);
   const [customName, setCustomName] = useState('');
   const [customEmoji, setCustomEmoji] = useState(() => {
     const usedEmojis = getCustomParticipants().map(p => p.emoji);
