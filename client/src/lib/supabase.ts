@@ -9,8 +9,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false, // CountNow는 익명 사용
-    autoRefreshToken: false,
+    persistSession: true, // 로그인 세션 유지
+    autoRefreshToken: true, // 자동 토큰 갱신
+    detectSessionInUrl: true, // OAuth 콜백 자동 처리
   },
   realtime: {
     params: {
