@@ -109,10 +109,11 @@ export default function SoloCount() {
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => setLocation('/')}
             className="flex-shrink-0"
+            title="홈으로"
             data-testid="button-home"
           >
             <Home className="h-5 w-5" />

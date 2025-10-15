@@ -337,9 +337,10 @@ export default function QuickCount() {
           <div className="max-w-4xl mx-auto space-y-3">
             <div className="flex items-center justify-between">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
                 onClick={() => setLocation('/')}
+                title="홈으로"
                 data-testid="button-home"
               >
                 <Home className="h-5 w-5" />
@@ -535,10 +536,11 @@ export default function QuickCount() {
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon"
             onClick={() => setLocation('/')}
             className="flex-shrink-0"
+            title="홈으로"
             data-testid="button-home"
           >
             <Home className="h-5 w-5" />
