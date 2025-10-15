@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Share2, Minus, Edit2, Check, Home } from 'lucide-react';
+import { RotateCcw, Share2, Minus, Edit2, Check, Home, MoreVertical } from 'lucide-react';
 import { useParams, useLocation } from 'wouter';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession, subscribeToSession } from '@/lib/supabaseStorage';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -172,34 +178,46 @@ export default function SoloCount() {
               variant="outline"
               size="icon"
               onClick={() => setShowShare(true)}
+              title="공유하기"
               data-testid="button-solo-share"
             >
               <Share2 className="h-5 w-5" />
             </Button>
             
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  data-testid="button-solo-reset"
+                  title="더보기"
+                  data-testid="button-more-menu"
                 >
-                  <RotateCcw className="h-5 w-5" />
+                  <MoreVertical className="h-5 w-5" />
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>숫자를 리셋하시겠습니까?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    현재 숫자({count})가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={reset}>리셋</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      숫자 리셋
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>숫자를 리셋하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        현재 숫자({count})가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction onClick={reset}>리셋</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>

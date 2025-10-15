@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home, UserPlus } from 'lucide-react';
+import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home, UserPlus, MoreVertical } from 'lucide-react';
 import { useParams, useLocation } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
@@ -11,6 +11,12 @@ import { getCurrentProfile, type UserProfile } from '@/lib/auth';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -599,34 +605,46 @@ export default function QuickCount() {
               variant="outline"
               size="icon"
               onClick={() => setShowShare(true)}
+              title="공유하기"
               data-testid="button-quick-share"
             >
               <Share2 className="h-5 w-5" />
             </Button>
 
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  data-testid="button-multi-reset"
+                  title="더보기"
+                  data-testid="button-more-menu"
                 >
-                  <RotateCcw className="h-5 w-5" />
+                  <MoreVertical className="h-5 w-5" />
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>모든 숫자를 리셋하시겠습니까?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    모든 참가자의 숫자가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>취소</AlertDialogCancel>
-                  <AlertDialogAction onClick={resetAllCounts}>리셋</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                      모든 숫자 리셋
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>모든 숫자를 리셋하시겠습니까?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        모든 참가자의 숫자가 0으로 초기화됩니다. 이 작업은 되돌릴 수 없습니다.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction onClick={resetAllCounts}>리셋</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </div>
