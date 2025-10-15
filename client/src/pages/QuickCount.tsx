@@ -152,17 +152,15 @@ export default function QuickCount() {
     return unsubscribe;
   }, [code, setupMode]);
   const [customName, setCustomName] = useState('');
-  const [customEmoji, setCustomEmoji] = useState(() => {
-    const usedEmojis = getCustomParticipants().map(p => p.emoji);
-    const allEmojis = [
-      '😀', '😃', '😄', '😁', '😆', '😅', '🤣', '😂', '🙂', '🙃', '😉', '😊', '😇', '🥰', '😍', '🤩', '😘', '😗', '😚', '😙', '😋', '😛', '😜', '🤪', '😝', '🤑', '🤗', '🤭', '🤫', '🤔', '🤐', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥', '😔', '😕', '🙁', '☹️', '😣', '😖', '😫', '😩', '🥺', '😢', '😭', '😤', '😠', '😡', '🤬', '🤯', '😳', '🥵', '🥶', '😱', '😨', '😰', '😥', '😓', '🤗', '🤔', '🤭', '🤫', '🤨', '😐', '😑', '😶', '😏', '😒', '🙄', '😬', '🤥'
-    ];
-    const availableEmojis = allEmojis.filter(emoji => !usedEmojis.includes(emoji));
-    return availableEmojis.length > 0 
-      ? availableEmojis[Math.floor(Math.random() * availableEmojis.length)]
-      : '😊';
-  });
+  const [customEmoji, setCustomEmoji] = useState('😊');
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+
+  // Update custom emoji when participants load
+  useEffect(() => {
+    if (customParticipants.length > 0) {
+      setCustomEmoji(getRandomEmoji());
+    }
+  }, []);
 
   const toggleLabel = (labelId: string) => {
     setSelectedLabels(prev => {
