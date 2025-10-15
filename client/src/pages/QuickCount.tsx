@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home } from 'lucide-react';
+import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home, UserPlus } from 'lucide-react';
 import { useParams, useLocation } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
-import { saveSession, getSession, saveCustomParticipants, getCustomParticipants, subscribeToSession } from '@/lib/supabaseStorage';
+import { saveSession, getSession, subscribeToSession } from '@/lib/supabaseStorage';
+import { getCustomParticipants, addCustomParticipant, deleteCustomParticipant } from '@/lib/customParticipants';
+import { getCurrentProfile, type UserProfile } from '@/lib/auth';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
@@ -98,27 +100,35 @@ export default function QuickCount() {
   const [title, setTitle] = useState(new Date().toLocaleDateString('ko-KR'));
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
-  const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>(() => getCustomParticipants());
+  const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
+  const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load session from Supabase
+  // Load session and profile from Supabase
   useEffect(() => {
-    if (!code) {
-      setIsLoading(false);
-      return;
-    }
+    const loadData = async () => {
+      // Load custom participants
+      const participants = await getCustomParticipants();
+      setCustomParticipants(participants);
 
-    const loadSession = async () => {
-      const saved = await getSession(code);
-      if (saved && saved.type === 'multi') {
-        setPlayers(saved.players);
-        setTitle(saved.title || new Date().toLocaleDateString('ko-KR'));
-        setSetupMode(saved.players.length === 0);
+      // Load user profile
+      const profile = await getCurrentProfile();
+      setMyProfile(profile);
+
+      // Load session if code exists
+      if (code) {
+        const saved = await getSession(code);
+        if (saved && saved.type === 'multi') {
+          setPlayers(saved.players);
+          setTitle(saved.title || new Date().toLocaleDateString('ko-KR'));
+          setSetupMode(saved.players.length === 0);
+        }
       }
+      
       setIsLoading(false);
     };
 
-    loadSession();
+    loadData();
   }, [code]);
 
   // Subscribe to realtime updates
@@ -205,19 +215,34 @@ export default function QuickCount() {
     setCustomEmoji(getRandomEmoji());
   };
 
-  const removeCustomParticipant = (id: string) => {
-    const updatedParticipants = customParticipants.filter(p => p.id !== id);
-    setCustomParticipants(updatedParticipants);
-    saveCustomParticipants(updatedParticipants);
-    setSelectedLabels(prev => {
-      const newSet = new Set(prev);
-      newSet.delete(id);
-      return newSet;
-    });
+  const removeCustomParticipant = async (id: string) => {
+    try {
+      await deleteCustomParticipant(id);
+      const updated = await getCustomParticipants();
+      setCustomParticipants(updated);
+      setSelectedLabels(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
+    } catch (error) {
+      console.error('Failed to remove participant:', error);
+    }
   };
 
   const startCounting = () => {
-    const allLabels = [...customParticipants, ...LABEL_GROUPS.flatMap(group => group.labels)];
+    // 내 프로필, 커스텀 참가자, 프리셋 라벨 모두 포함
+    const allLabels: PresetLabel[] = [
+      ...(myProfile ? [{
+        id: myProfile.id,
+        name: myProfile.display_name || myProfile.name,
+        emoji: myProfile.emoji,
+        color: myProfile.color,
+      }] : []),
+      ...customParticipants,
+      ...LABEL_GROUPS.flatMap(group => group.labels)
+    ];
+    
     const selected = allLabels.filter(label => selectedLabels.has(label.id));
     const newPlayers: Player[] = selected.map(label => ({
       id: label.id,
@@ -324,7 +349,7 @@ export default function QuickCount() {
                 onChange={(e) => setCustomName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    addCustomParticipant();
+                    addCustomParticipantHandler();
                   }
                 }}
                 placeholder="이름 입력"
@@ -332,7 +357,7 @@ export default function QuickCount() {
                 data-testid="input-custom-name"
               />
               <Button
-                onClick={addCustomParticipant}
+                onClick={addCustomParticipantHandler}
                 disabled={!customName.trim() || !customEmoji.trim()}
                 size="icon"
                 data-testid="button-add-custom"
@@ -355,6 +380,41 @@ export default function QuickCount() {
 
         <div className="flex-1 overflow-auto p-4">
           <div className="max-w-4xl mx-auto space-y-4">
+            {myProfile && (
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-muted-foreground px-1 flex items-center gap-2">
+                  <UserPlus className="h-4 w-4" />
+                  내 프로필 (빠른 추가)
+                </h3>
+                <Card
+                  className={`p-4 transition-all hover-elevate active-elevate-2 cursor-pointer ${
+                    selectedLabels.has(myProfile.id) ? 'ring-2 ring-primary' : ''
+                  }`}
+                  style={{ borderColor: selectedLabels.has(myProfile.id) ? myProfile.color : undefined }}
+                  onClick={() => toggleLabel(myProfile.id)}
+                  data-testid="card-my-profile"
+                >
+                  {selectedLabels.has(myProfile.id) && (
+                    <div className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-white bg-green-500">
+                      <Check className="h-4 w-4" />
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <div 
+                      className="w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-md"
+                      style={{ backgroundColor: myProfile.color }}
+                    >
+                      {myProfile.emoji}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold">{myProfile.display_name || myProfile.name}</p>
+                      <p className="text-xs text-muted-foreground">나</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
+
             {customParticipants.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-muted-foreground px-1">추가한 사람</h3>

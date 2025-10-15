@@ -31,12 +31,16 @@ export type CountSession = SoloSession | MultiSession;
 // Session 저장
 export async function saveSession(session: CountSession) {
   try {
+    // 현재 사용자 가져오기
+    const { data: { user } } = await supabase.auth.getUser();
+    
     const dbSession = {
       code: session.code,
       type: session.type,
       title: session.title || null,
       count: session.type === 'solo' ? session.count : null,
       players: session.type === 'multi' ? session.players : null,
+      user_id: user?.id || null, // 로그인한 경우 소유자 설정
     };
 
     const { data, error } = await supabase

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Plus, Users, Clock, Trash2 } from 'lucide-react';
+import { Plus, Users, Clock, Trash2, LogIn, User, LogOut } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { getSessions, deleteSession, clearAllSessions } from '@/lib/supabaseStorage';
 import type { CountSession } from '@/lib/supabaseStorage';
+import { getCurrentUser, getCurrentProfile, signOut, type UserProfile } from '@/lib/auth';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,14 +21,30 @@ import {
 export default function Home() {
   const [, setLocation] = useLocation();
   const [recentSessions, setRecentSessions] = useState<CountSession[]>([]);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    const loadSessions = async () => {
+    const loadData = async () => {
       const sessions = await getSessions();
       setRecentSessions(sessions);
+      
+      const currentUser = await getCurrentUser();
+      setUser(currentUser);
+      
+      if (currentUser) {
+        const userProfile = await getCurrentProfile();
+        setProfile(userProfile);
+      }
     };
-    loadSessions();
+    loadData();
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut();
+    setUser(null);
+    setProfile(null);
+  };
 
   const soloCount = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -67,9 +84,45 @@ export default function Home() {
     <div className="min-h-screen bg-background">
       <div className="max-w-md mx-auto min-h-screen flex flex-col px-6">
         {/* 헤더 */}
-        <div className="pt-16 pb-12 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">숫자 세기</h1>
-          <p className="text-sm text-muted-foreground">간단하고 직관적인 카운팅</p>
+        <div className="pt-8 pb-6">
+          <div className="flex items-center justify-between mb-6">
+            <div className="text-center flex-1">
+              <h1 className="text-3xl font-bold tracking-tight mb-2">숫자 세기</h1>
+              <p className="text-sm text-muted-foreground">간단하고 직관적인 카운팅</p>
+            </div>
+            
+            {user && profile ? (
+              <div className="flex items-center gap-2">
+                <div 
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-xl shadow-md cursor-pointer"
+                  style={{ backgroundColor: profile.color }}
+                  onClick={() => setLocation('/profile')}
+                  title={profile.display_name || profile.name}
+                >
+                  {profile.emoji}
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleSignOut}
+                  title="로그아웃"
+                  data-testid="button-logout"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setLocation('/login')}
+                data-testid="button-login"
+              >
+                <LogIn className="h-4 w-4 mr-2" />
+                로그인
+              </Button>
+            )}
+          </div>
         </div>
         
         {/* 메인 버튼 영역 */}
