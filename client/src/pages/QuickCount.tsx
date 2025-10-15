@@ -109,7 +109,14 @@ export default function QuickCount() {
     const loadData = async () => {
       // Load custom participants
       const participants = await getCustomParticipants();
-      setCustomParticipants(participants);
+      // Convert CustomParticipant to PresetLabel format
+      const presetParticipants: PresetLabel[] = participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        emoji: p.emoji,
+        color: p.color,
+      }));
+      setCustomParticipants(presetParticipants);
 
       // Load user profile
       const profile = await getCurrentProfile();
@@ -191,35 +198,52 @@ export default function QuickCount() {
       : '😊';
   };
 
-  const addCustomParticipant = () => {
+  const addCustomParticipantHandler = async () => {
     const name = customName.trim();
     const emoji = customEmoji.trim();
     
     if (!name || !emoji) return;
     
-    const id = `custom-${Date.now()}`;
     const color = COLOR_POOL[customParticipants.length % COLOR_POOL.length];
-    
-    const newParticipant: PresetLabel = {
-      id,
-      name,
-      emoji,
-      color,
-    };
-    
-    const updatedParticipants = [...customParticipants, newParticipant];
-    setCustomParticipants(updatedParticipants);
-    saveCustomParticipants(updatedParticipants);
-    setSelectedLabels(prev => new Set([...Array.from(prev), id]));
-    setCustomName('');
-    setCustomEmoji(getRandomEmoji());
+
+    try {
+      const newParticipant = await addCustomParticipant({
+        name,
+        emoji,
+        color,
+      });
+
+      const participants = await getCustomParticipants();
+      const presetParticipants: PresetLabel[] = participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        emoji: p.emoji,
+        color: p.color,
+      }));
+      setCustomParticipants(presetParticipants);
+      
+      if (newParticipant) {
+        setSelectedLabels(prev => new Set([...Array.from(prev), newParticipant.id]));
+      }
+      
+      setCustomName('');
+      setCustomEmoji(getRandomEmoji());
+    } catch (error) {
+      console.error('Failed to add participant:', error);
+    }
   };
 
   const removeCustomParticipant = async (id: string) => {
     try {
       await deleteCustomParticipant(id);
-      const updated = await getCustomParticipants();
-      setCustomParticipants(updated);
+      const participants = await getCustomParticipants();
+      const presetParticipants: PresetLabel[] = participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        emoji: p.emoji,
+        color: p.color,
+      }));
+      setCustomParticipants(presetParticipants);
       setSelectedLabels(prev => {
         const newSet = new Set(prev);
         newSet.delete(id);
