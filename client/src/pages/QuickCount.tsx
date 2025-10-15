@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw } from 'lucide-react';
-import { useParams } from 'wouter';
+import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home } from 'lucide-react';
+import { useParams, useLocation } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession, saveCustomParticipants, getCustomParticipants, subscribeToSession } from '@/lib/supabaseStorage';
@@ -91,6 +91,7 @@ const LABEL_GROUPS: LabelGroup[] = [
 
 export default function QuickCount() {
   const { code } = useParams();
+  const [, setLocation] = useLocation();
   const [setupMode, setSetupMode] = useState(true);
   const [selectedLabels, setSelectedLabels] = useState<Set<string>>(new Set());
   const [players, setPlayers] = useState<Player[]>([]);
@@ -287,9 +288,20 @@ export default function QuickCount() {
       <div className="min-h-screen bg-gradient-to-br from-chart-1/20 via-background to-chart-2/20 flex flex-col">
         <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
           <div className="max-w-4xl mx-auto space-y-3">
-            <div className="text-center space-y-1">
-              <h1 className="text-2xl font-bold">함께할 사람</h1>
-              <p className="text-sm text-muted-foreground">같이 숫자 세기를 할 사람들을 선택하세요</p>
+            <div className="flex items-center justify-between">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setLocation('/')}
+                data-testid="button-home"
+              >
+                <Home className="h-5 w-5" />
+              </Button>
+              <div className="flex-1 text-center space-y-1">
+                <h1 className="text-2xl font-bold">함께할 사람</h1>
+                <p className="text-sm text-muted-foreground">같이 숫자 세기를 할 사람들을 선택하세요</p>
+              </div>
+              <div className="w-10"></div>
             </div>
             
             <div className="flex gap-2">
@@ -440,6 +452,16 @@ export default function QuickCount() {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation('/')}
+            className="flex-shrink-0"
+            data-testid="button-home"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+          
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1">

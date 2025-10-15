@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Share2, Minus, Edit2, Check } from 'lucide-react';
-import { useParams } from 'wouter';
+import { RotateCcw, Share2, Minus, Edit2, Check, Home } from 'lucide-react';
+import { useParams, useLocation } from 'wouter';
 import ShareDialog from '@/components/ShareDialog';
 import { saveSession, getSession, subscribeToSession } from '@/lib/supabaseStorage';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ import {
 
 export default function SoloCount() {
   const { code } = useParams();
+  const [, setLocation] = useLocation();
   const [startedAt] = useState(Date.now());
   const [count, setCount] = useState(0);
   const [title, setTitle] = useState(new Date().toLocaleDateString('ko-KR'));
@@ -107,6 +108,16 @@ export default function SoloCount() {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation('/')}
+            className="flex-shrink-0"
+            data-testid="button-home"
+          >
+            <Home className="h-5 w-5" />
+          </Button>
+          
           <div className="flex items-center gap-2 flex-1 min-w-0">
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1">
