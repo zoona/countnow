@@ -145,23 +145,9 @@ export default function QuickCount() {
     loadData();
   }, [code]);
 
-  // Subscribe to realtime updates (ignore older/equal updates than local)
+  // Subscribe to realtime updates (temporarily disabled for stability)
   useEffect(() => {
-    if (!code || setupMode) return;
-
-    const unsubscribe = subscribeToSession(code, (session) => {
-      if (session.type === 'multi') {
-        if (session.timestamp <= lastLocalChangeAt.current + 300) return;
-        // ignore if players are effectively same
-        const same = players.length === session.players.length &&
-          players.every((p, i) => p.id === session.players[i].id && p.count === session.players[i].count);
-        if (same) return;
-        setPlayers(session.players);
-        setTitle(session.title || new Date().toLocaleDateString('ko-KR'));
-      }
-    });
-
-    return unsubscribe;
+    return; // TODO: re-enable after resolving oscillation issue
   }, [code, setupMode, players]);
   const [customName, setCustomName] = useState('');
   const [customEmoji, setCustomEmoji] = useState('😊');
