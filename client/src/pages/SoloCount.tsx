@@ -193,7 +193,7 @@ export default function SoloCount() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="sticky top-0 z-50 backdrop-blur-md bg-background/80 border-b p-4">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="flex items-center justify-between gap-2 max-w-4xl mx-auto">
           <Button
             variant="outline"
             size="icon"
