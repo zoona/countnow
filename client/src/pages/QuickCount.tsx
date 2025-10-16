@@ -692,7 +692,7 @@ export default function QuickCount() {
                   {title}
                 </h1>
                 <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                  같이 세기
+                  같이
                 </span>
                 <Button
                   variant="ghost"

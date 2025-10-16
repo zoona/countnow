@@ -135,7 +135,7 @@ export default function Home() {
           >
             <div className="flex flex-col items-center gap-1">
               <Plus className="h-6 w-6" />
-              <span>혼자 세기</span>
+              <span>혼자</span>
             </div>
           </Button>
 
@@ -148,7 +148,7 @@ export default function Home() {
           >
             <div className="flex flex-col items-center gap-1">
               <Users className="h-6 w-6" />
-              <span>같이 세기</span>
+              <span>같이</span>
             </div>
           </Button>
         </div>
