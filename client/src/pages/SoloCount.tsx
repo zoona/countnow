@@ -205,7 +205,7 @@ export default function SoloCount() {
             <Home className="h-5 w-5" />
           </Button>
           
-          <div className="flex items-center gap-2 flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-nowrap flex-1 min-w-0">
             {isEditingTitle ? (
               <div className="flex items-center gap-2 flex-1">
                 <Input
@@ -237,7 +237,7 @@ export default function SoloCount() {
                 <h1 className="text-xl font-bold truncate" data-testid="text-session-title">
                   {title}
                 </h1>
-                <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                <span className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-full shrink-0 whitespace-nowrap">
                   혼자 세기
                 </span>
                 <Button
