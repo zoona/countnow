@@ -66,10 +66,31 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
     endLongPress();
   };
 
+  const handleTouchCancel = () => {
+    endLongPress();
+  };
+
   useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        endLongPress();
+      }
+    };
+
+    const handleGlobalPointerUp = () => {
+      endLongPress();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('mouseup', handleGlobalPointerUp);
+    document.addEventListener('touchend', handleGlobalPointerUp);
+
     return () => {
       if (longPressTimer.current) clearTimeout(longPressTimer.current);
       if (incrementInterval.current) clearInterval(incrementInterval.current);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('mouseup', handleGlobalPointerUp);
+      document.removeEventListener('touchend', handleGlobalPointerUp);
     };
   }, []);
 
@@ -95,6 +116,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onMouseLeave={handleMouseLeave}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         className={`
           relative w-full min-h-32 rounded-3xl p-6 flex flex-col items-center justify-center gap-3
           transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
