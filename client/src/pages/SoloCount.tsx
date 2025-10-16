@@ -66,7 +66,44 @@ export default function SoloCount() {
     return unsubscribe;
   }, [code]);
 
-  const increment = () => setCount(prev => prev + 1);
+  // Unified pointer-based increment to avoid duplicate touch/click events
+  const pendingTapRef = useRef<boolean>(false);
+  const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleIncrementPointerDown = () => {
+    // Start a short timer to distinguish tap vs long press (no repeat for solo)
+    pendingTapRef.current = true;
+    if (longPressTimerRef.current) return;
+    longPressTimerRef.current = setTimeout(() => {
+      // Treat as long press: still just one increment for solo
+      setCount(prev => prev + 1);
+      pendingTapRef.current = false;
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    }, 160);
+  };
+
+  const handleIncrementPointerUp = () => {
+    // If tap pending, increment once
+    if (pendingTapRef.current) {
+      pendingTapRef.current = false;
+      setCount(prev => prev + 1);
+    }
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+
+  const handleIncrementPointerCancel = () => {
+    pendingTapRef.current = false;
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
   const decrement = () => setCount(prev => Math.max(0, prev - 1));
   const reset = () => setCount(0);
 
@@ -233,7 +270,10 @@ export default function SoloCount() {
 
           <div className="space-y-2">
             <button
-              onClick={increment}
+              onPointerDown={handleIncrementPointerDown}
+              onPointerUp={handleIncrementPointerUp}
+              onPointerCancel={handleIncrementPointerCancel}
+              onContextMenu={(e) => e.preventDefault()}
               className="w-full min-h-32 rounded-3xl p-6 flex items-center justify-center
                        transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2"
               style={{ backgroundColor: mainColor }}
