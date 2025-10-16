@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Minus } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
 
 interface PlayerButtonProps {
   id: string;
@@ -78,6 +78,16 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
   
   return (
     <div className="space-y-2">
+      {/* Count display (consistent with SoloCount: large number above) */}
+      <div className="w-full flex items-center justify-center">
+        <span
+          className="text-5xl font-extrabold text-foreground"
+          data-testid={`text-player-count-${id}`}
+        >
+          {count}
+        </span>
+      </div>
+
       <button
         onClick={handleIncrementClick}
         onMouseDown={handleMouseDown}
@@ -90,17 +100,17 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
           transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
           ${isLongPressing ? 'ring-4 ring-offset-2 ring-white animate-pulse' : ''}
         `}
-        style={{ 
-          backgroundColor: color,
-        }}
+        style={{ backgroundColor: color }}
         data-testid={`button-player-${id}`}
+        aria-label={`${name} 증가`}
       >
-        <span className="text-white text-lg font-bold drop-shadow-md" data-testid={`text-player-name-${id}`}>
+        <span
+          className="text-white text-lg font-bold drop-shadow-md"
+          data-testid={`text-player-name-${id}`}
+        >
           {name}
         </span>
-        <span className="text-white text-6xl font-extrabold drop-shadow-lg" data-testid={`text-player-count-${id}`}>
-          {count}
-        </span>
+        <Plus className="h-10 w-10 text-white drop-shadow-lg" />
       </button>
       
       <button
@@ -114,6 +124,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
           backgroundColor: count === 0 ? '#999' : darkerColor,
         }}
         data-testid={`button-player-decrement-${id}`}
+        aria-label={`${name} 감소`}
       >
         <Minus className="h-6 w-6 text-white drop-shadow-md" />
       </button>
