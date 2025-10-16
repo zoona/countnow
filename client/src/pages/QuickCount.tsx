@@ -513,28 +513,43 @@ export default function QuickCount() {
                 <div className="flex items-center justify-between px-1">
                   <h3 className="text-sm font-semibold text-muted-foreground">추가한 사람</h3>
                   <div className="flex gap-2">
-                    {isEditMode && selectedForDeletion.size > 0 && (
+                    {isEditMode ? (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={toggleEditMode}
+                          className="h-8 px-3 text-xs"
+                          data-testid="button-cancel-selection"
+                          title="선택 취소"
+                        >
+                          취소
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={deleteSelectedParticipants}
+                          className="h-8 px-3 text-xs"
+                          data-testid="button-delete-selected"
+                          title="선택한 참가자 삭제"
+                          disabled={selectedForDeletion.size === 0}
+                        >
+                          삭제{selectedForDeletion.size > 0 ? ` (${selectedForDeletion.size})` : ''}
+                        </Button>
+                      </>
+                    ) : (
                       <Button
-                        variant="destructive"
+                        variant="outline"
                         size="sm"
-                        onClick={deleteSelectedParticipants}
+                        onClick={toggleEditMode}
                         className="h-8 px-3 text-xs"
-                        data-testid="button-delete-selected"
+                        data-testid="button-select-mode"
+                        title="참가자 선택"
                       >
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        선택 삭제 ({selectedForDeletion.size})
+                        <Check className="h-3 w-3 mr-1" />
+                        선택
                       </Button>
                     )}
-                    <Button
-                      variant={isEditMode ? "default" : "outline"}
-                      size="sm"
-                      onClick={toggleEditMode}
-                      className="h-8 px-3 text-xs"
-                      data-testid="button-edit-mode"
-                    >
-                      <Trash2 className="h-3 w-3 mr-1" />
-                      {isEditMode ? '완료' : '편집'}
-                    </Button>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
