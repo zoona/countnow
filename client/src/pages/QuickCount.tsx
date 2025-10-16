@@ -543,11 +543,11 @@ export default function QuickCount() {
                         size="sm"
                         onClick={toggleEditMode}
                         className="h-8 px-3 text-xs"
-                        data-testid="button-select-mode"
-                        title="참가자 선택"
+                        data-testid="button-edit-mode"
+                        title="편집"
                       >
-                        <Check className="h-3 w-3 mr-1" />
-                        선택
+                        <Edit2 className="h-3 w-3 mr-1" />
+                        편집
                       </Button>
                     )}
                   </div>
