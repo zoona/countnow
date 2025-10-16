@@ -16,21 +16,27 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
   const incrementInterval = useRef<NodeJS.Timeout | null>(null);
 
   const startLongPress = () => {
+    // prevent duplicate timers
+    if (longPressTimer.current || incrementInterval.current) return;
     longPressTimer.current = setTimeout(() => {
       setIsLongPressing(true);
       onIncrement(id);
-      incrementInterval.current = setInterval(() => {
-        onIncrement(id);
-      }, 200);
+      if (!incrementInterval.current) {
+        incrementInterval.current = setInterval(() => {
+          onIncrement(id);
+        }, 200);
+      }
     }, 500);
   };
 
   const endLongPress = () => {
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
     }
     if (incrementInterval.current) {
       clearInterval(incrementInterval.current);
+      incrementInterval.current = null;
     }
     setIsLongPressing(false);
   };
@@ -46,29 +52,11 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
     onDecrement(id);
   };
 
-  const handleMouseDown = () => {
-    startLongPress();
-  };
-
-  const handleMouseUp = () => {
-    endLongPress();
-  };
-
-  const handleMouseLeave = () => {
-    endLongPress();
-  };
-
-  const handleTouchStart = () => {
-    startLongPress();
-  };
-
-  const handleTouchEnd = () => {
-    endLongPress();
-  };
-
-  const handleTouchCancel = () => {
-    endLongPress();
-  };
+  // Unified pointer handlers
+  const handlePointerDown = () => startLongPress();
+  const handlePointerUp = () => endLongPress();
+  const handlePointerLeave = () => endLongPress();
+  const handlePointerCancel = () => endLongPress();
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -77,20 +65,18 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
       }
     };
 
-    const handleGlobalPointerUp = () => {
-      endLongPress();
-    };
+    const handleGlobalPointerUp = () => endLongPress();
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    document.addEventListener('mouseup', handleGlobalPointerUp);
-    document.addEventListener('touchend', handleGlobalPointerUp);
+    document.addEventListener('pointerup', handleGlobalPointerUp);
+    document.addEventListener('pointercancel', handleGlobalPointerUp);
 
     return () => {
       if (longPressTimer.current) clearTimeout(longPressTimer.current);
       if (incrementInterval.current) clearInterval(incrementInterval.current);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      document.removeEventListener('mouseup', handleGlobalPointerUp);
-      document.removeEventListener('touchend', handleGlobalPointerUp);
+      document.removeEventListener('pointerup', handleGlobalPointerUp);
+      document.removeEventListener('pointercancel', handleGlobalPointerUp);
     };
   }, []);
 
@@ -111,12 +97,11 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
 
       <button
         onClick={handleIncrementClick}
-        onMouseDown={handleMouseDown}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchCancel}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
+        onPointerCancel={handlePointerCancel}
+        onContextMenu={(e) => e.preventDefault()}
         className={`
           relative w-full min-h-32 rounded-3xl p-6 flex flex-col items-center justify-center gap-3
           transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
