@@ -32,6 +32,7 @@ export default function SoloCount() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const lastLocalChangeAtRef = useRef<number>(0);
 
   // Load session from Supabase
   useEffect(() => {
@@ -52,12 +53,13 @@ export default function SoloCount() {
     loadSession();
   }, [code]);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (ignore updates right after local changes)
   useEffect(() => {
     if (!code) return;
 
     const unsubscribe = subscribeToSession(code, (session) => {
       if (session.type === 'solo') {
+        if (session.timestamp <= lastLocalChangeAtRef.current + 300) return;
         setCount(session.count);
         setTitle(session.title || new Date().toLocaleDateString('ko-KR'));
       }
@@ -70,12 +72,14 @@ export default function SoloCount() {
   const pendingTapRef = useRef<boolean>(false);
   const longPressTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleIncrementPointerDown = () => {
+  const handleIncrementPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    e.preventDefault();
     // Start a short timer to distinguish tap vs long press (no repeat for solo)
     pendingTapRef.current = true;
     if (longPressTimerRef.current) return;
     longPressTimerRef.current = setTimeout(() => {
       // Treat as long press: still just one increment for solo
+      lastLocalChangeAtRef.current = Date.now();
       setCount(prev => prev + 1);
       pendingTapRef.current = false;
       if (longPressTimerRef.current) {
@@ -89,6 +93,7 @@ export default function SoloCount() {
     // If tap pending, increment once
     if (pendingTapRef.current) {
       pendingTapRef.current = false;
+      lastLocalChangeAtRef.current = Date.now();
       setCount(prev => prev + 1);
     }
     if (longPressTimerRef.current) {
@@ -104,7 +109,17 @@ export default function SoloCount() {
       longPressTimerRef.current = null;
     }
   };
-  const decrement = () => setCount(prev => Math.max(0, prev - 1));
+  const handleIncrementPointerLeave = () => {
+    pendingTapRef.current = false;
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  };
+  const decrement = () => {
+    lastLocalChangeAtRef.current = Date.now();
+    setCount(prev => Math.max(0, prev - 1));
+  };
   const reset = () => setCount(0);
 
   const mainColor = '#80D8FF';
@@ -146,6 +161,34 @@ export default function SoloCount() {
       save();
     };
   }, [code, count, title]);
+
+  // Global safety: clear timers on visibility change or global pointer end
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        pendingTapRef.current = false;
+        if (longPressTimerRef.current) {
+          clearTimeout(longPressTimerRef.current);
+          longPressTimerRef.current = null;
+        }
+      }
+    };
+    const handleGlobalPointer = () => {
+      pendingTapRef.current = false;
+      if (longPressTimerRef.current) {
+        clearTimeout(longPressTimerRef.current);
+        longPressTimerRef.current = null;
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener('pointerup', handleGlobalPointer);
+    document.addEventListener('pointercancel', handleGlobalPointer);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      document.removeEventListener('pointerup', handleGlobalPointer);
+      document.removeEventListener('pointercancel', handleGlobalPointer);
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
