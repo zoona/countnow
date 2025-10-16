@@ -152,13 +152,17 @@ export default function QuickCount() {
     const unsubscribe = subscribeToSession(code, (session) => {
       if (session.type === 'multi') {
         if (session.timestamp <= lastLocalChangeAt.current + 300) return;
+        // ignore if players are effectively same
+        const same = players.length === session.players.length &&
+          players.every((p, i) => p.id === session.players[i].id && p.count === session.players[i].count);
+        if (same) return;
         setPlayers(session.players);
         setTitle(session.title || new Date().toLocaleDateString('ko-KR'));
       }
     });
 
     return unsubscribe;
-  }, [code, setupMode]);
+  }, [code, setupMode, players]);
   const [customName, setCustomName] = useState('');
   const [customEmoji, setCustomEmoji] = useState('😊');
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
@@ -303,6 +307,21 @@ export default function QuickCount() {
     lastLocalChangeAt.current = Date.now();
     setPlayers(prev => prev.map(p => ({ ...p, count: 0 })));
   };
+
+  // Debounced autosave instead of fixed interval to avoid race with realtime
+  useEffect(() => {
+    if (!code || setupMode) return;
+    const t = setTimeout(() => {
+      saveSession({
+        code,
+        type: 'multi',
+        players,
+        timestamp: Date.now(),
+        title: title || undefined,
+      });
+    }, 300);
+    return () => clearTimeout(t);
+  }, [players, title, code, setupMode]);
 
   const handleTitleSave = () => {
     const trimmedTitle = title.trim();
