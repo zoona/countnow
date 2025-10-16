@@ -9,6 +9,7 @@ import QuickCount from "@/pages/QuickCount";
 import Login from "@/pages/Login";
 import AuthCallback from "@/pages/AuthCallback";
 import Onboarding from "@/pages/Onboarding";
+import Profile from "@/pages/Profile";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,6 +19,7 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/auth/callback" component={AuthCallback} />
       <Route path="/onboarding" component={Onboarding} />
+      <Route path="/profile" component={Profile} />
       <Route path="/room/:code/solo" component={SoloCount} />
       <Route path="/room/:code/count" component={QuickCount} />
       <Route path="/room/:code" component={SoloCount} />
