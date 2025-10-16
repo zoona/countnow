@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, Share2, Minus, Edit2, Check, Home, MoreVertical } from 'lucide-react';
 import { useParams, useLocation } from 'wouter';
