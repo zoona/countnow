@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home, UserPlus, MoreVertical } from 'lucide-react';
+import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home, UserPlus, MoreVertical, Trash2 } from 'lucide-react';
 import { useParams, useLocation } from 'wouter';
 import PlayerButton from '@/components/PlayerButton';
 import ShareDialog from '@/components/ShareDialog';
@@ -109,6 +109,8 @@ export default function QuickCount() {
   const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [selectedForDeletion, setSelectedForDeletion] = useState<Set<string>>(new Set());
   const lastLocalChangeAt = useRef<number>(0);
 
   // Load session and profile from Supabase
@@ -226,6 +228,57 @@ export default function QuickCount() {
       setCustomEmoji(getRandomEmoji());
     } catch (error) {
       console.error('Failed to add participant:', error);
+    }
+  };
+
+  const toggleEditMode = () => {
+    setIsEditMode(!isEditMode);
+    setSelectedForDeletion(new Set());
+  };
+
+  const toggleDeletionSelection = (id: string) => {
+    setSelectedForDeletion(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
+  const deleteSelectedParticipants = async () => {
+    if (selectedForDeletion.size === 0) return;
+    
+    try {
+      // Delete all selected participants
+      await Promise.all(
+        Array.from(selectedForDeletion).map(id => deleteCustomParticipant(id))
+      );
+      
+      // Refresh the list
+      const participants = await getCustomParticipants();
+      const presetParticipants: PresetLabel[] = participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        emoji: p.emoji,
+        color: p.color,
+      }));
+      setCustomParticipants(presetParticipants);
+      
+      // Remove deleted participants from selected labels
+      setSelectedLabels(prev => {
+        const newSet = new Set(prev);
+        selectedForDeletion.forEach(id => newSet.delete(id));
+        return newSet;
+      });
+      
+      // Exit edit mode
+      setIsEditMode(false);
+      setSelectedForDeletion(new Set());
+    } catch (error) {
+      console.error('Failed to remove participants:', error);
     }
   };
 
@@ -457,41 +510,74 @@ export default function QuickCount() {
 
             {customParticipants.length > 0 && (
               <div className="space-y-2">
-                <h3 className="text-sm font-semibold text-muted-foreground px-1">추가한 사람</h3>
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-sm font-semibold text-muted-foreground">추가한 사람</h3>
+                  <div className="flex gap-2">
+                    {isEditMode && selectedForDeletion.size > 0 && (
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={deleteSelectedParticipants}
+                        className="h-8 px-3 text-xs"
+                        data-testid="button-delete-selected"
+                      >
+                        <Trash2 className="h-3 w-3 mr-1" />
+                        선택 삭제 ({selectedForDeletion.size})
+                      </Button>
+                    )}
+                    <Button
+                      variant={isEditMode ? "default" : "outline"}
+                      size="sm"
+                      onClick={toggleEditMode}
+                      className="h-8 px-3 text-xs"
+                      data-testid="button-edit-mode"
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      {isEditMode ? '완료' : '편집'}
+                    </Button>
+                  </div>
+                </div>
                 <div className="grid grid-cols-3 gap-2">
                   {customParticipants.map((label) => {
                     const isSelected = selectedLabels.has(label.id);
+                    const isSelectedForDeletion = selectedForDeletion.has(label.id);
                     return (
                       <div key={label.id} className="space-y-2">
                         <Card
                           className={`p-2.5 transition-all hover-elevate active-elevate-2 relative ${
                             isSelected ? 'ring-2 ring-primary' : ''
+                          } ${isEditMode ? 'cursor-pointer' : ''} ${
+                            isSelectedForDeletion ? 'ring-2 ring-destructive' : ''
                           }`}
                           style={{ borderColor: isSelected ? label.color : undefined }}
                           data-testid={`label-${label.id}`}
                         >
-                          <div className="cursor-pointer" onClick={() => toggleLabel(label.id)}>
-                            {isSelected && (
-                              <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-green-500">
-                                <Check className="h-3 w-3" />
+                          {isEditMode ? (
+                            <div onClick={() => toggleDeletionSelection(label.id)}>
+                              {isSelectedForDeletion && (
+                                <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-destructive">
+                                  <Check className="h-3 w-3" />
+                                </div>
+                              )}
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="text-2xl">{label.emoji}</div>
+                                <div className="text-xs font-medium text-center">{label.name}</div>
                               </div>
-                            )}
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="text-2xl">{label.emoji}</div>
-                              <div className="text-xs font-medium text-center">{label.name}</div>
                             </div>
-                          </div>
+                          ) : (
+                            <div className="cursor-pointer" onClick={() => toggleLabel(label.id)}>
+                              {isSelected && (
+                                <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-green-500">
+                                  <Check className="h-3 w-3" />
+                                </div>
+                              )}
+                              <div className="flex flex-col items-center gap-1">
+                                <div className="text-2xl">{label.emoji}</div>
+                                <div className="text-xs font-medium text-center">{label.name}</div>
+                              </div>
+                            </div>
+                          )}
                         </Card>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => removeCustomParticipant(label.id)}
-                          className="w-full h-8 px-2 text-xs"
-                          data-testid={`button-remove-${label.id}`}
-                        >
-                          <X className="h-3 w-3 mr-1" />
-                          삭제
-                        </Button>
                       </div>
                     );
                   })}
