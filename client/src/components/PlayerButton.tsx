@@ -94,6 +94,16 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
   
   return (
     <div className="space-y-2">
+      {/* Player name at top for clear identification */}
+      <div className="w-full flex items-center justify-center">
+        <span
+          className="text-sm font-semibold text-muted-foreground"
+          data-testid={`text-player-name-${id}`}
+        >
+          {name}
+        </span>
+      </div>
+
       {/* Count display (consistent with SoloCount: large number above) */}
       <div className="w-full flex items-center justify-center">
         <span
@@ -119,12 +129,6 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         data-testid={`button-player-${id}`}
         aria-label={`${name} 증가`}
       >
-        <span
-          className="text-white text-lg font-bold drop-shadow-md"
-          data-testid={`text-player-name-${id}`}
-        >
-          {name}
-        </span>
         <Plus className="h-10 w-10 text-white drop-shadow-lg" />
       </button>
       
