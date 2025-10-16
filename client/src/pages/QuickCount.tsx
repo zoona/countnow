@@ -657,7 +657,7 @@ export default function QuickCount() {
       </div>
 
       <div className="flex-1 overflow-auto p-4">
-        <div className={`grid ${gridCols} gap-4 max-w-4xl mx-auto`}>
+        <div className={`grid ${gridCols} gap-x-4 gap-y-8 max-w-4xl mx-auto`}>
           {players.map((player) => (
             <PlayerButton
               key={player.id}
