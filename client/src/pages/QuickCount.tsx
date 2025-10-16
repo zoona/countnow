@@ -388,6 +388,7 @@ export default function QuickCount() {
                 onChange={(e) => setCustomName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
+                    e.preventDefault();
                     addCustomParticipantHandler();
                   }
                 }}
