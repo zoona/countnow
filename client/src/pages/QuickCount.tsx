@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Check, Share2, Edit2, Plus, X, Smile, RotateCcw, Home, UserPlus, MoreVertical } from 'lucide-react';
@@ -109,6 +109,7 @@ export default function QuickCount() {
   const [customParticipants, setCustomParticipants] = useState<PresetLabel[]>([]);
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const lastLocalChangeAt = useRef<number>(0);
 
   // Load session and profile from Supabase
   useEffect(() => {
@@ -144,12 +145,13 @@ export default function QuickCount() {
     loadData();
   }, [code]);
 
-  // Subscribe to realtime updates
+  // Subscribe to realtime updates (ignore older/equal updates than local)
   useEffect(() => {
     if (!code || setupMode) return;
 
     const unsubscribe = subscribeToSession(code, (session) => {
       if (session.type === 'multi') {
+        if (session.timestamp <= lastLocalChangeAt.current + 300) return;
         setPlayers(session.players);
         setTitle(session.title || new Date().toLocaleDateString('ko-KR'));
       }
@@ -284,18 +286,21 @@ export default function QuickCount() {
   };
 
   const handleIncrement = (playerId: string) => {
-    setPlayers(prev => prev.map(p => 
+    lastLocalChangeAt.current = Date.now();
+    setPlayers(prev => prev.map(p => (
       p.id === playerId ? { ...p, count: p.count + 1 } : p
-    ));
+    )));
   };
 
   const handleDecrement = (playerId: string) => {
-    setPlayers(prev => prev.map(p => 
+    lastLocalChangeAt.current = Date.now();
+    setPlayers(prev => prev.map(p => (
       p.id === playerId ? { ...p, count: Math.max(0, p.count - 1) } : p
-    ));
+    )));
   };
 
   const resetAllCounts = () => {
+    lastLocalChangeAt.current = Date.now();
     setPlayers(prev => prev.map(p => ({ ...p, count: 0 })));
   };
 

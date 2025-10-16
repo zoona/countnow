@@ -40,6 +40,8 @@ export async function saveSession(session: CountSession) {
       title: session.title || null,
       count: session.type === 'solo' ? session.count : null,
       players: session.type === 'multi' ? session.players : null,
+      // 서버 정합성을 위한 타임스탬프(밀리초)
+      updated_at: new Date().toISOString(),
       user_id: user?.id || null, // 로그인한 경우 소유자 설정
     };
 
