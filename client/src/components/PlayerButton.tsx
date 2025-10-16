@@ -41,11 +41,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
     setIsLongPressing(false);
   };
 
-  const handleIncrementClick = () => {
-    if (!isLongPressing) {
-      onIncrement(id);
-    }
-  };
+  // Tap vs long-press decision is handled on pointer up
 
   const handleDecrementClick = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
@@ -54,7 +50,20 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
 
   // Unified pointer handlers
   const handlePointerDown = () => startLongPress();
-  const handlePointerUp = () => endLongPress();
+  const handlePointerUp = () => {
+    // If repeating was active, just end.
+    if (incrementInterval.current) {
+      endLongPress();
+      return;
+    }
+    // If timer pending (tap), cancel timer and increment once
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+      onIncrement(id);
+    }
+    endLongPress();
+  };
   const handlePointerLeave = () => endLongPress();
   const handlePointerCancel = () => endLongPress();
 
