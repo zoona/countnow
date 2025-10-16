@@ -480,11 +480,12 @@ export default function QuickCount() {
                   내 프로필 (빠른 추가)
                 </h3>
                 <Card
-                  className={`p-4 transition-all hover-elevate active-elevate-2 cursor-pointer ${
-                    selectedLabels.has(myProfile.id) ? 'ring-2 ring-primary' : ''
-                  }`}
+                  className={`p-4 transition-all hover-elevate active-elevate-2 ${
+                    isEditMode ? 'opacity-50 pointer-events-none' : 'cursor-pointer'
+                  } ${selectedLabels.has(myProfile.id) ? 'ring-2 ring-primary' : ''}`}
                   style={{ borderColor: selectedLabels.has(myProfile.id) ? myProfile.color : undefined }}
-                  onClick={() => toggleLabel(myProfile.id)}
+                  onClick={!isEditMode ? () => toggleLabel(myProfile.id) : undefined}
+                  aria-disabled={isEditMode}
                   data-testid="card-my-profile"
                 >
                   {selectedLabels.has(myProfile.id) && (
@@ -609,11 +610,12 @@ export default function QuickCount() {
                     return (
                       <Card
                         key={label.id}
-                        onClick={() => toggleLabel(label.id)}
-                        className={`p-2.5 cursor-pointer transition-all hover-elevate active-elevate-2 relative ${
-                          isSelected ? 'ring-2 ring-primary' : ''
-                        }`}
+                        onClick={!isEditMode ? () => toggleLabel(label.id) : undefined}
+                        className={`p-2.5 transition-all hover-elevate active-elevate-2 relative ${
+                          isEditMode ? 'opacity-50 pointer-events-none' : 'cursor-pointer'
+                        } ${isSelected ? 'ring-2 ring-primary' : ''}`}
                         style={{ borderColor: isSelected ? label.color : undefined }}
+                        aria-disabled={isEditMode}
                         data-testid={`label-${label.id}`}
                       >
                         {isSelected && (
