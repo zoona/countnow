@@ -107,7 +107,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
       {/* Count display (consistent with SoloCount: large number above) */}
       <div className="w-full flex items-center justify-center">
         <span
-          className="text-5xl font-extrabold text-foreground"
+          className="text-4xl font-extrabold text-foreground"
           data-testid={`text-player-count-${id}`}
         >
           {count}
@@ -121,7 +121,7 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         onPointerCancel={handlePointerCancel}
         onContextMenu={(e) => e.preventDefault()}
         className={`
-          relative w-full min-h-32 rounded-3xl p-6 flex flex-col items-center justify-center gap-3
+          relative w-full min-h-24 rounded-3xl p-4 flex flex-col items-center justify-center gap-2
           transition-transform active:scale-95 shadow-lg hover-elevate active-elevate-2
           ${isLongPressing ? 'ring-4 ring-offset-2 ring-white animate-pulse' : ''}
         `}
@@ -129,14 +129,14 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
         data-testid={`button-player-${id}`}
         aria-label={`${name} 증가`}
       >
-        <Plus className="h-10 w-10 text-white drop-shadow-lg" />
+        <Plus className="h-8 w-8 text-white drop-shadow-lg" />
       </button>
       
       <button
         onClick={handleDecrementClick}
         onTouchEnd={handleDecrementClick}
         disabled={count === 0}
-        className="w-full h-16 rounded-3xl shadow-lg hover-elevate active-elevate-2 
+        className="w-full h-12 rounded-3xl shadow-lg hover-elevate active-elevate-2 
                    flex items-center justify-center transition-transform active:scale-95
                    disabled:opacity-30 disabled:cursor-not-allowed"
         style={{
