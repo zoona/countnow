@@ -461,41 +461,37 @@ export default function QuickCount() {
                   {customParticipants.map((label) => {
                     const isSelected = selectedLabels.has(label.id);
                     return (
-                      <Card
-                        key={label.id}
-                        className={`p-2.5 transition-all hover-elevate active-elevate-2 relative ${
-                          isSelected ? 'ring-2 ring-primary' : ''
-                        }`}
-                        style={{ borderColor: isSelected ? label.color : undefined }}
-                        data-testid={`label-${label.id}`}
-                      >
-                        <div className="cursor-pointer" onClick={() => toggleLabel(label.id)}>
-                          {isSelected && (
-                            <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-green-500">
-                              <Check className="h-3 w-3" />
+                      <div key={label.id} className="space-y-2">
+                        <Card
+                          className={`p-2.5 transition-all hover-elevate active-elevate-2 relative ${
+                            isSelected ? 'ring-2 ring-primary' : ''
+                          }`}
+                          style={{ borderColor: isSelected ? label.color : undefined }}
+                          data-testid={`label-${label.id}`}
+                        >
+                          <div className="cursor-pointer" onClick={() => toggleLabel(label.id)}>
+                            {isSelected && (
+                              <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full flex items-center justify-center text-white bg-green-500">
+                                <Check className="h-3 w-3" />
+                              </div>
+                            )}
+                            <div className="flex flex-col items-center gap-1">
+                              <div className="text-2xl">{label.emoji}</div>
+                              <div className="text-xs font-medium text-center">{label.name}</div>
                             </div>
-                          )}
-                          <div className="flex flex-col items-center gap-1 pb-8">
-                            <div className="text-2xl">{label.emoji}</div>
-                            <div className="text-xs font-medium text-center">{label.name}</div>
                           </div>
-                        </div>
-                        <div className="pt-1">
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeCustomParticipant(label.id);
-                            }}
-                            className="w-full h-6 px-2 text-xs rounded-t-none"
-                            data-testid={`button-remove-${label.id}`}
-                          >
-                            <X className="h-3 w-3 mr-1" />
-                            삭제
-                          </Button>
-                        </div>
-                      </Card>
+                        </Card>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => removeCustomParticipant(label.id)}
+                          className="w-full h-8 px-2 text-xs"
+                          data-testid={`button-remove-${label.id}`}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          삭제
+                        </Button>
+                      </div>
                     );
                   })}
                 </div>
