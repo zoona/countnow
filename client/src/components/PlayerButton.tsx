@@ -105,7 +105,6 @@ export default function PlayerButton({ id, name, color, count, onIncrement, onDe
       </div>
 
       <button
-        onClick={handleIncrementClick}
         onPointerDown={handlePointerDown}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
